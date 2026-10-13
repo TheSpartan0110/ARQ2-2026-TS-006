@@ -1,0 +1,459 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Página-1" id="EFViOXD8inAndvillEvp">
+    <mxGraphModel dx="5112" dy="2252" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <object placeholders="1" c4Name="Usuario Solicitante" c4Type="Persona]&#xa;Estudiante, docente o administrativo" c4Description="Crea tickets y consulta su estado" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-1">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="-340" y="180" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Coordinador de Soporte" c4Type="Persona" c4Description="Asigna responsables&#xa;Consulta métricas&#xa;Revisa auditoría" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-2">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="-76" y="180" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Agente de Soporte " c4Type="Persona" c4Description="Consulta tickets asignados&#xa;Actualiza estados&#xa;Registra observaciones" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-3">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="190" y="180" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Sistema de Gestión de Tickets de Soporte Universitario" c4Type="Software System" c4Description="Centraliza la creación, asignación,&lt;br/&gt;seguimiento, cierre y auditoría&lt;br/&gt;de solicitudes de soporte" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-4">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#1061B0;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0D5091;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="-96" y="510" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-5" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=12 12;" target="YcYYckgkfeWWWVSCa3iC-4">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="-299.1299999999999" y="399.99999999999994" as="sourcePoint" />
+            <mxPoint x="-140.04999999999995" y="612.24" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-6" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="290" y="570" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-7" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Crear solicitud, Consultar estado" vertex="1">
+          <mxGeometry height="20" width="110" x="-350" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-9" parent="1" style="text;whiteSpace=wrap;html=1;" value="Ver tickets asignados, Actualizar estado, Registrar solución" vertex="1">
+          <mxGeometry height="30" width="180" x="310" y="430" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-10" parent="1" style="text;whiteSpace=wrap;html=1;" value="Asignar responsable, Ver métricas, Consultar historial" vertex="1">
+          <mxGeometry height="40" width="170" x="40" y="420" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Amazon SES" c4Type="External Software System" c4Description="Proveedor externo de correo transaccional.&#xa;Envía notificaciones del sistema de tickets&#xa;como creación, asignación, cambio de estado y cierre." label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-11">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#8C8496;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#736782;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="-360" y="690" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-12" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=12 12;" target="YcYYckgkfeWWWVSCa3iC-11">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="30" y="750" />
+            </Array>
+            <mxPoint x="30" y="640" as="sourcePoint" />
+            <mxPoint x="-110" y="810" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-13" parent="1" style="text;whiteSpace=wrap;html=1;" value="Envía notificaciones mediante API" vertex="1">
+          <mxGeometry height="40" width="190" x="40" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-14" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;C4 Nivel 1 — Diagrama de Contexto&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="299" x="-130" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-16" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;C4 Nivel 2 — Diagrama de Contenedores&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="50" width="296" x="2090" y="60" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Usuario Solicitante" c4Type="Persona]&#xa;Estudiante, docente o administrativo" c4Description="Crea tickets y consulta su estado" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-17">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="1080" y="200" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Coordinador de Soporte" c4Type="Persona" c4Description="Asigna responsables&#xa;Consulta métricas&#xa;Revisa auditoría" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-18">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="1080" y="470" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Agente de Soporte " c4Type="Persona" c4Description="Consulta tickets asignados&#xa;Actualiza estados&#xa;Registra observaciones" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-19">
+          <mxCell parent="1" style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#083F75;strokeColor=#06315C;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;metaEdit=1;points=[[0.5,0,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0]];resizable=0;" vertex="1">
+            <mxGeometry height="180" width="200" x="1100" y="760" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Aplicación Web" c4Type="Container" c4Description="React&#xa;Interfaz para crear, consultar,&lt;br/&gt;asignar y actualizar tickets" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-20">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#1061B0;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0D5091;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1620" y="500" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="API Backend" c4Type="Container" c4Description="Spring Boot&lt;br/&gt;Monolito modular por capas&lt;br/&gt;&lt;br/&gt;Gestiona autenticación, permisos,&lt;br/&gt;tickets, categorías, auditoría&lt;br/&gt;y publicación de eventos" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-21">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#1061B0;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0D5091;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];rotation=0;" vertex="1">
+            <mxGeometry height="120" width="240" x="2010" y="500" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="PostgreSQL" c4Type="Container" c4Technology="Database Container" c4Description="Usuarios, roles, tickets,&lt;br/&gt;categorías e historial" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%:&amp;nbsp;%c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-23">
+          <mxCell parent="1" style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;labelBackgroundColor=none;fillColor=#23A2D9;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;metaEdit=1;points=[[0.5,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.5,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];resizable=0;" vertex="1">
+            <mxGeometry height="120" width="240" x="2010" y="260" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="RabbitMQ" c4Type="Message Bus Container" c4Technology="" c4Description="Almacena eventos de notificación pendientes o diferidos.&#xa;" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%:&amp;nbsp;%c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-24">
+          <mxCell parent="1" style="shape=cylinder3;size=15;direction=south;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;labelBackgroundColor=none;fillColor=#23A2D9;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;metaEdit=1;points=[[0.5,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.5,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];resizable=0;" vertex="1">
+            <mxGeometry height="120" width="240" x="2460" y="500" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-25" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.014;entryY=0.165;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1.002;exitY=0.676;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=12 12;" target="YcYYckgkfeWWWVSCa3iC-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1450" y="322" />
+              <mxPoint x="1450" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-27" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-18" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-28" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-20">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1360" y="890" />
+              <mxPoint x="1450" y="890" />
+              <mxPoint x="1450" y="590" />
+            </Array>
+            <mxPoint x="1290" y="890" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-29" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-30" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Crear solicitud, Consultar estado" vertex="1">
+          <mxGeometry height="20" width="110" x="1310" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-31" parent="1" style="text;whiteSpace=wrap;html=1;" value="Asignar responsable, Ver métricas, Consultar historial" vertex="1">
+          <mxGeometry height="40" width="170" x="1300" y="520" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-32" parent="1" style="text;whiteSpace=wrap;html=1;" value="Ver tickets asignados, Actualizar estado, Registrar solución" vertex="1">
+          <mxGeometry height="30" width="120" x="1325" y="820" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-34" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="HTTP / REST + JWT" vertex="1">
+          <mxGeometry height="30" width="120" x="1870" y="525" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-35" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-36" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;" target="YcYYckgkfeWWWVSCa3iC-23">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2260" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-37" parent="1" style="text;whiteSpace=wrap;html=1;" value="Spring Data JPA&lt;div&gt;Transacción principal&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="130" x="2140" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-38" parent="1" style="text;whiteSpace=wrap;html=1;" value="Publica evento&lt;div&gt;después de guardar ticket&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="149" x="2290" y="515" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-39" parent="1" style="text;whiteSpace=wrap;html=1;" value="API Amazon SES&lt;div&gt;Envía correo y reintenta si falla&lt;/div&gt;" vertex="1">
+          <mxGeometry height="40" width="160" x="2850" y="270" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Amazon SES" c4Type="External Software System" c4Description="Proveedor externo de correo transaccional.&#xa;Envía notificaciones del sistema de tickets&#xa;como creación, asignación, cambio de estado y cierre." label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-40">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#8C8496;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#736782;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="3020" y="280" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-41" parent="1" style="text;whiteSpace=wrap;html=1;" value="Entrega eventos pendientes" vertex="1">
+          <mxGeometry height="40" width="180" x="2590" y="450" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Servicio de Notificaciones" c4Type="Container" c4Technology="Spring Boot Worker" c4Description="Consume eventos desde RabbitMQ, envía correos mediante Amazon SES&#xa;y reintenta los envíos fallidos sin afectar la creación o actualización de tickets." label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-43">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fillColor=#23A2D9;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="2460" y="270" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-44" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-43">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-45" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-43" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.008;entryY=0.408;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=12 12;" target="YcYYckgkfeWWWVSCa3iC-40">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="3000" y="329" />
+              <mxPoint x="3000" y="329" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <object placeholders="1" c4Name="Sistema de Gestión de Tickets de Soporte Universitario" c4Type="SystemScopeBoundary" c4Application="Software System" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-46">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="570" width="1220" x="1590" y="210" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Aplicación Web" c4Type="Container" c4Description="React&#xa;Interfaz para crear, consultar,&lt;br/&gt;asignar y actualizar tickets" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-49">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#1061B0;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0D5091;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1540" y="1490" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-50" parent="1" style="text;whiteSpace=wrap;html=1;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;&lt;b&gt;C4 Nivel 3 — Componentes del Backend&lt;/b&gt;&lt;/font&gt;" vertex="1">
+          <mxGeometry height="40" width="530" x="986" y="1390" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Control de Acceso" c4Type="Component" c4Technology="Spring Security + JWT" c4Description="Verifica identidad,&lt;br/&gt;rol y permisos" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-51">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#e1d5e7;align=center;arcSize=6;strokeColor=#9673a6;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1540" y="1810" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Gestión de Solicitudes" c4Type="Component" c4Technology="Spring MVC Controller" c4Description="Recibe creación,&lt;br/&gt;actualización y asignación" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-52">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#e1d5e7;align=center;arcSize=6;strokeColor=#9673a6;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1170" y="2090" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-67" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-60">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Consultas y Filtrado" c4Type="Component" c4Technology="Spring MVC Controller" c4Description="Consulta tickets usando&lt;br/&gt;filtros y paginación" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-53">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#e1d5e7;align=center;arcSize=6;strokeColor=#9673a6;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1540" y="2180" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Consulta de Auditoría" c4Type="Component" c4Technology="Spring MVC Controller" c4Description="Permite revisar historial&lt;br/&gt;de cambios" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-54">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#e1d5e7;align=center;arcSize=6;strokeColor=#9673a6;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1900" y="2090" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-55" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-52">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1600" y="2010" />
+              <mxPoint x="1290" y="2010" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-56" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-57" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-54">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-58" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-49" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-51">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Casos de Uso de Gestión" c4Type="Component" c4Technology="" c4Description="Crear solicitud&lt;br/&gt;Actualizar estado&lt;br/&gt;Asignar responsable" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-59">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#63BEF2;fontColor=#ffffff;align=center;arcSize=6;strokeColor=#2086C9;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="900" y="2530" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Caso de Uso de Consulta" c4Type="Component" c4Technology="" c4Description="Consultar tickets según usuario,&lt;br/&gt;estado, fecha o categoría" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-60">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#63BEF2;fontColor=#ffffff;align=center;arcSize=6;strokeColor=#2086C9;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1540" y="2470" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-79" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-65">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Caso de Uso de Auditoría" c4Type="Component" c4Technology="" c4Description="Reconstruir ciclo de vida&lt;br/&gt;de una solicitud" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-61">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#63BEF2;fontColor=#ffffff;align=center;arcSize=6;strokeColor=#2086C9;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1920" y="2630" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Publicación de Eventos" c4Type="Component" c4Technology="Spring AMQP" c4Description="Publica eventos de notificación&lt;br/&gt;sin bloquear el flujo principal" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-62">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#63BEF2;fontColor=#ffffff;align=center;arcSize=6;strokeColor=#2086C9;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1200" y="2730" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-75" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-64">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Dominio de Tickets" c4Type="Component" c4Technology="" c4Description="Solicitud, estado, prioridad,&lt;br/&gt;responsable y transiciones válidas" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-63">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#d5e8d4;align=center;arcSize=6;strokeColor=#82b366;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="-90" y="2560" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Categorías Configurables" c4Type="Component" c4Technology="" c4Description="Tipos de soporte administrados&lt;br/&gt;como datos configurables" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-64">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#d5e8d4;align=center;arcSize=6;strokeColor=#82b366;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="-90" y="2890" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Historial Inmutable" c4Type="Component" c4Technology="" c4Description="Usuario, fecha,&lt;br/&gt;estado anterior y nuevo" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-65">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#d5e8d4;align=center;arcSize=6;strokeColor=#82b366;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="300" y="2770" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-66" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-52" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-59">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-68" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-62">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-69" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-54" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.419;entryY=0.011;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-61">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="" c4Type="ContainerScopeBoundary" c4Application="Capa de Presentación / Controladores REST" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-70">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="570" width="1210" x="1020" y="1770" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="" c4Type="ContainerScopeBoundary" c4Application="Capa de Aplicación / Casos de Uso" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-71">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="480" width="1450" x="870" y="2410" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-72" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;" target="YcYYckgkfeWWWVSCa3iC-63">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-73" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-63">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-74" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-63">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="30" y="2480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-76" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-63" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.75;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-65">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="140" y="2680" />
+              <mxPoint x="140" y="2830" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <object placeholders="1" c4Name="" c4Type="ContainerScopeBoundary" c4Application="Capa de Dominio / Reglas del Negocio" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-77">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="560" width="940" x="-300" y="2520" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Repositorios" c4Type="Component" c4Technology="Spring Data JPA" c4Description="Acceso a tickets, usuarios,&lt;br/&gt;categorías e historial" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-80">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#f8cecc;align=center;arcSize=6;strokeColor=#b85450;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1255" y="3060" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-81" parent="1" style="text;whiteSpace=wrap;html=1;" value="autoriza operación" vertex="1">
+          <mxGeometry height="40" width="130" x="1370" y="1980" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-82" parent="1" style="text;whiteSpace=wrap;html=1;" value="autoriza consulta" vertex="1">
+          <mxGeometry height="40" width="120" x="1550" y="2100" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-83" parent="1" style="text;whiteSpace=wrap;html=1;" value="autoriza auditoría" vertex="1">
+          <mxGeometry height="40" width="130" x="1810" y="1980" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-84" parent="1" style="text;whiteSpace=wrap;html=1;" value="HTTP/REST + JWT" vertex="1">
+          <mxGeometry height="40" width="140" x="1540" y="1670" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-85" parent="1" style="text;whiteSpace=wrap;html=1;" value="crear / actualizar / asignar" vertex="1">
+          <mxGeometry height="40" width="170" x="1030" y="2420" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-86" parent="1" style="text;whiteSpace=wrap;html=1;" value="consultar tickets" vertex="1">
+          <mxGeometry height="40" width="120" x="1670" y="2430" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-87" parent="1" style="text;whiteSpace=wrap;html=1;" value="consultar historial" vertex="1">
+          <mxGeometry height="40" width="130" x="2030" y="2470" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-90" parent="1" style="text;whiteSpace=wrap;html=1;" value="aplica reglas de negocio" vertex="1">
+          <mxGeometry height="40" width="160" x="394" y="2560" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-91" parent="1" style="text;whiteSpace=wrap;html=1;" value="consulta datos permitidos" vertex="1">
+          <mxGeometry height="40" width="170" x="510" y="2450" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-92" parent="1" style="text;whiteSpace=wrap;html=1;" value="revisa trazabilidad" vertex="1">
+          <mxGeometry height="40" width="130" x="480" y="2660" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-93" parent="1" style="text;whiteSpace=wrap;html=1;" value="usa categorías" vertex="1">
+          <mxGeometry height="40" width="110" x="-80" y="2780" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-94" parent="1" style="text;whiteSpace=wrap;html=1;" value="genera historial" vertex="1">
+          <mxGeometry height="40" width="120" x="150" y="2750" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-95" parent="1" style="text;whiteSpace=wrap;html=1;" value="genera evento de notificación" vertex="1">
+          <mxGeometry height="40" width="190" x="1335" y="2630" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="Publicador RabbitMQ" c4Type="Component" c4Technology="Spring AMQP" c4Description="Envía eventos a la cola" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-96">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#f8cecc;align=center;arcSize=6;strokeColor=#b85450;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="730" y="3110" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-97" edge="1" parent="1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-80">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1120" y="3090" />
+            </Array>
+            <mxPoint x="1120" y="2650" as="sourcePoint" />
+            <mxPoint x="1120" y="3100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-99" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-60" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-80">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-100" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-61" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.75;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.004;exitY=0.911;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-80">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-101" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-62" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.438;entryY=0.039;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-96">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="" c4Type="ContainerScopeBoundary" c4Application="Capa de Infraestructura" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-102">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="310" width="920" x="690" y="3010" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-103" parent="1" style="text;whiteSpace=wrap;html=1;" value="guarda cambios e historial" vertex="1">
+          <mxGeometry height="40" width="170" x="1130" y="2950" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-104" parent="1" style="text;whiteSpace=wrap;html=1;" value="consulta tickets paginados" vertex="1">
+          <mxGeometry height="40" width="170" x="1500" y="2910" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-105" parent="1" style="text;whiteSpace=wrap;html=1;" value="consulta historial" vertex="1">
+          <mxGeometry height="40" width="120" x="1770" y="2750" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="PostgreSQL" c4Type="Container" c4Technology="Database Container" c4Description="Usuarios, roles, tickets,&lt;br/&gt;categorías e historial" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%:&amp;nbsp;%c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-106">
+          <mxCell parent="1" style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;labelBackgroundColor=none;fillColor=#23A2D9;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;metaEdit=1;points=[[0.5,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.5,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];resizable=0;" vertex="1">
+            <mxGeometry height="120" width="240" x="1400" y="3460" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="RabbitMQ" c4Type="Message Bus Container" c4Technology="" c4Description="Almacena eventos de notificación pendientes o diferidos.&#xa;" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%:&amp;nbsp;%c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-107">
+          <mxCell parent="1" style="shape=cylinder3;size=15;direction=south;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;labelBackgroundColor=none;fillColor=#23A2D9;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;metaEdit=1;points=[[0.5,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.5,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];resizable=0;" vertex="1">
+            <mxGeometry height="120" width="240" x="710" y="3710" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Servicio de Notificaciones" c4Type="Container" c4Technology="Spring Boot Worker" c4Description="Consume eventos desde RabbitMQ, envía correos mediante Amazon SES&#xa;y reintenta los envíos fallidos sin afectar la creación o actualización de tickets." label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-108">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;labelBackgroundColor=none;fillColor=#23A2D9;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1180" y="3710" as="geometry" />
+          </mxCell>
+        </object>
+        <object placeholders="1" c4Name="Amazon SES" c4Type="External Software System" c4Description="Proveedor externo de correo transaccional.&#xa;Envía notificaciones del sistema de tickets&#xa;como creación, asignación, cambio de estado y cierre." label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#cccccc&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-109">
+          <mxCell parent="1" style="rounded=1;whiteSpace=wrap;html=1;labelBackgroundColor=none;fillColor=#8C8496;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#736782;metaEdit=1;resizable=0;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="120" width="240" x="1640" y="3710" as="geometry" />
+          </mxCell>
+        </object>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-110" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-96" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.044;entryY=0.41;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-107">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-111" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-107" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-108">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-112" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-80" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-106">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-113" edge="1" parent="1" source="YcYYckgkfeWWWVSCa3iC-108" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;dashed=1;dashPattern=8 8;" target="YcYYckgkfeWWWVSCa3iC-109">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-114" parent="1" style="text;whiteSpace=wrap;html=1;" value="lee / escribe datos" vertex="1">
+          <mxGeometry height="40" width="130" x="1386" y="3400" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-116" parent="1" style="text;whiteSpace=wrap;html=1;" value="publica evento" vertex="1">
+          <mxGeometry height="40" width="110" x="860" y="3380" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-117" parent="1" style="text;whiteSpace=wrap;html=1;" value="entrega eventos pendientes" vertex="1">
+          <mxGeometry height="40" width="180" x="970" y="3740" as="geometry" />
+        </mxCell>
+        <mxCell id="YcYYckgkfeWWWVSCa3iC-118" parent="1" style="text;whiteSpace=wrap;html=1;" value="envía correo mediante API" vertex="1">
+          <mxGeometry height="40" width="170" x="1455" y="3730" as="geometry" />
+        </mxCell>
+        <object placeholders="1" c4Name="API Backend Spring Boot" c4Type="ContainerScopeBoundary" c4Application="Arquitectura: Monolito modular por capas" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Name%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;&lt;div style=&quot;text-align: left&quot;&gt;[%c4Application%]&lt;/div&gt;" id="YcYYckgkfeWWWVSCa3iC-120">
+          <mxCell parent="1" style="rounded=1;fontSize=11;whiteSpace=wrap;html=1;dashed=1;arcSize=20;fillColor=none;strokeColor=#666666;fontColor=#333333;labelBackgroundColor=none;align=left;verticalAlign=bottom;labelBorderColor=none;spacingTop=0;spacing=10;dashPattern=8 4;metaEdit=1;rotatable=0;perimeter=rectanglePerimeter;noLabel=0;labelPadding=0;allowArrows=0;connectable=0;expand=0;recursiveResize=0;editable=1;pointerEvents=0;absoluteArcSize=1;points=[[0.25,0,0],[0.5,0,0],[0.75,0,0],[1,0.25,0],[1,0.5,0],[1,0.75,0],[0.75,1,0],[0.5,1,0],[0.25,1,0],[0,0.75,0],[0,0.5,0],[0,0.25,0]];" vertex="1">
+            <mxGeometry height="1665" width="2720" x="-350" y="1695" as="geometry" />
+          </mxCell>
+        </object>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
