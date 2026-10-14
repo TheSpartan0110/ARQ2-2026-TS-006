@@ -196,12 +196,68 @@ Return 202 only after the order, idempotency result and OrderCreated outbox entr
 
 ### 3.5 Restaurant operations
 
-**TODO - Team contribution required.** Define the contracts for restaurant staff to list incoming orders, accept or reject an order, and report preparation progress. Use Sections 3.2-3.4 as formatting examples.
-
-- [ ] For each endpoint, specify method, path, authentication, restaurant ownership checks, request body, responses with 2xx/4xx/5xx status codes and a concrete example.
-- [ ] Define response schemas, rejection reasons, concurrency checks and invalid-transition errors using RestaurantOrder and the shared HTTP contract.
-- [ ] Describe which local changes and outgoing events commit together, without updating Orders synchronously.
-- [ ] Align the completed contracts with the order state rules and Feature 1 and Feature 4 scenarios.
+Restaurant Operations owns the restaurant inbox (RestaurantOrder). A RestaurantOrder is created with status `PENDING` only when Restaurant Operations consumes the restaurant acceptance request that Orders sends after `PaymentSucceeded` (Section 2.4), so restaurants never see unpaid orders. Its identifier is the global `orderId`.
+ 
+**Authorization.** All endpoints require the `RESTAURANT` role; any other role receives `403 FORBIDDEN` (Feature 1). The caller's `restaurantId` is taken from the verified token/profile, never from the path, query or body. A RestaurantOrder that belongs to another restaurant, or does not exist, returns `404 NOT_FOUND` to prevent enumeration.
+ 
+**Allowed local transitions.**
+ 
+| Current status | Action | Next status | Event published (via outbox) |
+| --- | --- | --- | --- |
+| PENDING | accept | ACCEPTED | RestaurantAccepted |
+| PENDING | reject | REJECTED | RestaurantRejected |
+| ACCEPTED | start preparation | PREPARING | RestaurantPreparing |
+ 
+Any other combination returns `409 INVALID_TRANSITION`. REJECTED and PREPARING are final for this service in this draft (pickup belongs to Delivery).
+ 
+| Method and path | Authentication / authorization | Request body | Responses | Example |
+| --- | --- | --- | --- | --- |
+| GET /restaurant-orders | RESTAURANT; only orders of the caller's restaurant | None; pagination query plus optional `status: RestaurantOrderStatus` filter | 200 paginated RestaurantOrder; shared 4xx/5xx | `GET /restaurant-orders?status=PENDING&limit=20`. Response: `{"items":[{"orderId":"00000000-0000-4000-8000-000000000010","restaurantId":"00000000-0000-4000-8000-000000000002","items":[{"menuItemId":"00000000-0000-4000-8000-000000000003","name":"Classic Burger","quantity":1,"unitPrice":{"amountMinor":2500000,"currency":"COP"}}],"status":"PENDING","reason":null,"version":1}],"nextCursor":null}`. |
+| GET /restaurant-orders/{orderId} | RESTAURANT owner | None | 200 RestaurantOrder; 404 NOT_FOUND; shared 4xx/5xx | Response: the RestaurantOrder shown above. |
+| POST /restaurant-orders/{orderId}/accept | RESTAURANT owner; requires Idempotency-Key | `{expectedVersion: integer}` | 200 RestaurantOrder with status ACCEPTED; 404 NOT_FOUND; 409 INVALID_TRANSITION, VERSION_CONFLICT or idempotency conflict; shared 4xx/5xx | Request: `{"expectedVersion":1}`. Response: RestaurantOrder with `"status":"ACCEPTED","version":2`. |
+| POST /restaurant-orders/{orderId}/reject | RESTAURANT owner; requires Idempotency-Key | `{expectedVersion: integer, reason: string[1..300]}` | 200 RestaurantOrder with status REJECTED; 404 NOT_FOUND; 409 INVALID_TRANSITION, VERSION_CONFLICT or idempotency conflict; shared 4xx/5xx (400 INVALID_REQUEST if reason is missing or empty) | Request: `{"expectedVersion":1,"reason":"Kitchen closed due to a gas outage"}`. Response: RestaurantOrder with `"status":"REJECTED","reason":"Kitchen closed due to a gas outage","version":2`. |
+| POST /restaurant-orders/{orderId}/preparation | RESTAURANT owner; requires Idempotency-Key | `{expectedVersion: integer}` | 200 RestaurantOrder with status PREPARING; 404 NOT_FOUND; 409 INVALID_TRANSITION, VERSION_CONFLICT or idempotency conflict; shared 4xx/5xx | Request: `{"expectedVersion":2}`. Response: RestaurantOrder with `"status":"PREPARING","version":3`. |
+ 
+Endpoint-specific errors:
+ 
+| Code | HTTP status | When |
+| --- | --- | --- |
+| INVALID_TRANSITION | 409 | The action is not allowed from the current status (for example, accepting an order that is already REJECTED). `details` contains `currentStatus`. |
+| VERSION_CONFLICT | 409 | `expectedVersion` does not match the stored version (optimistic concurrency). `details` contains `currentVersion`; the client must reload the order before retrying. |
+ 
+Example decision request and response:
+ 
+```http
+POST /api/v1/restaurant-orders/00000000-0000-4000-8000-000000000010/reject HTTP/1.1
+Authorization: Bearer <restaurant-access-token>
+Content-Type: application/json
+Idempotency-Key: 00000000-0000-4000-8000-000000000060
+X-Correlation-ID: 00000000-0000-4000-8000-000000000061
+ 
+{
+  "expectedVersion": 1,
+  "reason": "Kitchen closed due to a gas outage"
+}
+```
+ 
+```http
+HTTP/1.1 409 Conflict
+Content-Type: application/json
+X-Correlation-ID: 00000000-0000-4000-8000-000000000061
+ 
+{
+  "code": "VERSION_CONFLICT",
+  "message": "The restaurant order was modified by another request",
+  "correlationId": "00000000-0000-4000-8000-000000000061",
+  "details": {"currentVersion": 2}
+}
+```
+ 
+**Concurrency.** Two staff members may act on the same order at the same time. Each decision is a conditional update (`WHERE orderId = ? AND version = expectedVersion`); only one succeeds and the other receives `409 VERSION_CONFLICT`. This guarantees at most one restaurant decision per order. Retrying the same request with the same Idempotency-Key replays the original 200 response instead of failing.
+ 
+**Atomic commit and asynchronous propagation.** Each successful action commits, in a single Restaurant Operations database transaction: the new RestaurantOrder status and version, the idempotency record and the outbox entry for the corresponding event. The 200 response confirms only the local decision. Restaurant Operations never calls Orders synchronously and never writes Orders tables; the global order status changes later when Orders consumes the event (Section 2.4). The event uses the stored workflow `correlationId` from the original order (Section 4.4), `causationId: null` because it is HTTP-triggered, `producer: "restaurants"`, `aggregateId` equal to `orderId`, and `aggregateVersion` equal to the new RestaurantOrder version. Payload details are defined in Section 4.2.
+ 
+**Alignment with requirements.** A USER calling any decision endpoint receives 403 and no event is created (Feature 1, "Reject an unauthorized restaurant action"). A restaurant requesting another restaurant's order receives 404 (Feature 1, "Protect another restaurant's order"). Rejecting a paid order publishes RestaurantRejected, which leads Orders to REJECTED and one RefundPayment (Feature 4, "Refund a rejected paid order"). Preparation can only start after acceptance in this service, and Orders still waits durably if RestaurantPreparing arrives before RestaurantAccepted (Feature 4, "Handle preparation before acceptance").
 
 ### 3.6 Drivers and deliveries
 
