@@ -73,46 +73,34 @@ Wave 1 defines an event-driven microservices architecture:
 
 Primary business progression:
 
-`Created -> Accepted -> Preparing -> OnTheWay -> Delivered`
+`CREATED -> ACCEPTED -> PREPARING -> ON_THE_WAY -> DELIVERED`
 
-Exception flows include:
+Exception flows:
 
-- `PaymentFailed`
-- `Rejected`
-- `Cancelled`
-- `DeliveryFailed`
+- `PAYMENT_FAILED`: the payment provider definitively refused the charge.
+- `REJECTED`: the restaurant rejected a paid order; the payment is refunded asynchronously.
 
-State transitions are expected to be event-driven, validated, and auditable.
+Customer cancellation and failed deliveries are out of scope for this version. Only order creation is HTTP-driven; every later transition is triggered by an asynchronous event and validated against the state rules in `docs/spec.md`.
 
 ## 8) High-Level Event Contracts
 
-Representative domain events:
+The Order Service coordinates the workflow by consuming events and sending commands through RabbitMQ:
 
-- `OrderCreated`
-- `PaymentAuthorized` / `PaymentFailed`
-- `RestaurantAccepted` / `RestaurantRejected`
-- `OrderPreparing`
-- `DeliveryAssigned`
-- `OrderOnTheWay`
-- `OrderDelivered`
+- **Commands:** `ChargePayment`, `RefundPayment`, `RequestRestaurantAcceptance`, `AssignDelivery`
+- **Events:** `OrderCreated`, `PaymentAuthorized`, `PaymentFailed`, `PaymentPendingReconciliation`, `PaymentRefunded`, `RestaurantAccepted`, `RestaurantRejected`, `RestaurantPreparing`, `DeliveryAssigned`, `DeliveryPickedUp`, `DeliveryCompleted`, `OrderStatusChanged`
 
-Minimum event metadata (high level):
-
-- `eventId`
-- `eventType`
-- `occurredAt`
-- `correlationId`
-- `causationId`
-- `aggregateId`
-- `payload`
+Every message uses a common envelope with `messageId`, `messageType`, `schemaVersion`, `occurredAt`, `producer`, `orderId`, `correlationId`, `causationId`, `aggregateId`, `aggregateVersion`, `traceparent` and `payload`. The full catalog is in Section 4 of `docs/spec.md`.
 
 ## 9) Technology Stack (Planned/Selected)
 
+- **API Gateway:** Spring Cloud Gateway
+- **Services:** Spring Boot
+- **Identity:** Spring Authorization Server (OIDC, JWT)
 - **Message broker:** RabbitMQ
-- **Databases:** PostgreSQL
+- **Database:** PostgreSQL (one schema per service)
 - **Cache:** Redis
 - **Containerization:** Docker / Docker Compose
-- **Observability:** Prometheus, Loki, Grafana, OpenTelemetry (Jaeger/Tempo backend)
+- **Observability:** OpenTelemetry, Prometheus, Grafana Loki, Grafana Tempo, Grafana
 - **Architecture method:** C4 + ADRs
 
 Final implementation choices must remain aligned with the official technical specification and ADRs.
@@ -123,31 +111,37 @@ Final implementation choices must remain aligned with the official technical spe
 .
 ├── README.md
 └── docs/
-    ├── adr/
-    │   └── Orquestación event-driven.md
+    ├── spec.md
+    ├── adrs/
+    │   ├── 001-message-broker.md
+    │   ├── 002-catalog-cache.md
+    │   ├── 003-distributed-observability.md
+    │   ├── 004-postgresql-schema-per-service.md
+    │   ├── 005-identity-and-access.md
+    │   └── 006-customer-notifications.md
     └── assets/
-        ├── modelocagp6.drawio
-        └── modelocagp6.drawio.svg
+        ├── Modeloc4gp6.drawio.png
+        └── Borrador_Modeloc4gp6.drawio.png
 ```
 
 ## 11) Documentation Links and Locations
 
 - **Repository:** <https://github.com/TheSpartan0110/ARQ2-2026-TS-006>
-- **ADRs folder (current):** `/docs/adr/`
-- **Architecture assets (current):** `/docs/assets/`
-- **Technical Specification (Google Docs):** **`[TS-006 LINK PENDING - INSERT GOOGLE DOCS URL HERE]`**
+- **Contract specification (OpenSpec):** [`docs/spec.md`](docs/spec.md)
+- **ADRs:** [`docs/adrs/`](docs/adrs/)
+- **C4 diagrams:** [`docs/assets/`](docs/assets/)
+- **Technical Specification (Google Docs):** [TS-006](https://docs.google.com/document/d/1cwNtZgZUkI_g6uFyuXAOHy1lT3k5_hTiJ7wgAHQZ7h0/edit?usp=sharing)
 
-If additional design artifacts are added (e.g., OpenAPI/OpenSpec files), they should remain under `/docs/` with clear versioning.
+## 12) ADR Summary
 
-## 12) ADR Summary (Current)
-
-Current ADR work indicates an event-driven orchestration direction, centered on:
-
-1. **Asynchronous messaging** to reduce runtime coupling.
-2. **Read optimization/caching** for restaurant catalog access.
-3. **Traceability-first design** with distributed observability.
-
-As ADRs are formalized, each record should capture context, decision, alternatives, and consequences.
+| ADR | Decision | Main alternatives considered |
+| --- | --- | --- |
+| [001](docs/adrs/001-message-broker.md) | RabbitMQ with Transactional Outbox and idempotent consumers | Synchronous REST, Apache Kafka |
+| [002](docs/adrs/002-catalog-cache.md) | Redis cache-aside for the catalog | Direct PostgreSQL queries, local cache per instance |
+| [003](docs/adrs/003-distributed-observability.md) | OpenTelemetry, Prometheus, Loki, Tempo and Grafana | Local log files, ELK Stack, Jaeger |
+| [004](docs/adrs/004-postgresql-schema-per-service.md) | Shared PostgreSQL with one schema per service | One instance per service, MongoDB |
+| [005](docs/adrs/005-identity-and-access.md) | Spring Authorization Server inside Identity & Access | Custom JWT login, Keycloak |
+| [006](docs/adrs/006-customer-notifications.md) | Asynchronous Notification Service with an SMTP adapter | Synchronous emails per service, notifications inside Orders |
 
 ## 13) Observability and Correlation IDs
 
@@ -168,8 +162,8 @@ This enables complete order journey reconstruction and faster incident diagnosis
 - [x] Case assignment and scope definition
 - [x] Event-driven architectural direction documented
 - [x] Initial architecture artifacts in repository
-- [ ] Formal ADR set completed and standardized
-- [ ] Contract specification finalized
+- [x] Formal ADR set completed and standardized
+- [x] Contract specification completed (pending team review)
 - [ ] Final C4 container-level documentation consolidated
 
 ### Wave 2 — Implementation (planned)
