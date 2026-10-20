@@ -130,7 +130,7 @@ Final implementation choices must remain aligned with the official technical spe
 - **Contract specification (OpenSpec):** [`docs/spec.md`](docs/spec.md)
 - **ADRs:** [`docs/adrs/`](docs/adrs/)
 - **C4 diagrams:** [`docs/assets/`](docs/assets/)
-- **Technical Specification (Google Docs):** **`[TS-006 LINK PENDING - INSERT GOOGLE DOCS URL HERE]`**
+- **Technical Specification (Google Docs):** [TS-006](https://docs.google.com/document/d/1cwNtZgZUkI_g6uFyuXAOHy1lT3k5_hTiJ7wgAHQZ7h0/edit?usp=sharing)
 
 ## 12) ADR Summary
 
