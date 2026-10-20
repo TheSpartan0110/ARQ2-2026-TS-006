@@ -35,9 +35,9 @@ Each business service owns its persistent data. As in the container diagram, a s
 
 ### 1.2 Design decisions
 
-The ADRs establish RabbitMQ, Transactional Outbox, idempotent consumers, Redis cache-aside and OpenTelemetry/Loki/Grafana. This specification makes them implementable with the following decisions:
+The ADRs in `docs/adrs/` establish RabbitMQ with Transactional Outbox and idempotent consumers (ADR 001), Redis cache-aside for the catalog (ADR 002), OpenTelemetry with Prometheus, Loki, Tempo and Grafana (ADR 003), PostgreSQL with one schema per service (ADR 004), Spring Authorization Server for identity and access (ADR 005) and an asynchronous Notification Service (ADR 006). This specification makes them implementable with the following decisions:
 
-- Identity & Access exposes an OIDC-compatible authorization server and issues JWT access tokens. Restaurant and driver accounts are provisioned through trusted administration; public role escalation is forbidden.
+- Identity & Access embeds an OIDC authorization server and issues JWT access tokens (ADR 005). Customers self-register as USER; RESTAURANT, DRIVER and ADMIN accounts are created only by an ADMIN (Section 3.2). Public role escalation is forbidden.
 - Customers obtain a signed, short-lived quote before order submission. Orders verifies it locally, avoiding a synchronous Catalog call during order creation.
 - Payment completes before restaurant acceptance is requested, so restaurants never see unpaid orders. If the restaurant rejects a paid order, it is refunded asynchronously.
 - `PaymentAuthorized` (the event name in the container diagram) is emitted only when the provider confirms the charge. The provider adapter authorizes and captures in one idempotent operation; a pending, timed-out or merely reserved authorization never produces `PaymentAuthorized`.
@@ -55,7 +55,7 @@ All payloads use JSON with camelCase fields. Fields are required unless marked o
 | --- | --- |
 | Money | `{ "amountMinor": integer >= 0, "currency": "COP" }`. Values use minor units, never floating point. COP 25,000 is `2500000`. |
 | Address | `{ "line1": string[1..200], "city": string[1..100], "instructions": string[0..300] (optional) }`. |
-| Role | `USER`, `RESTAURANT`, `DRIVER`. |
+| Role | `USER`, `RESTAURANT`, `DRIVER`, `ADMIN`. |
 | OrderStatus | `CREATED`, `ACCEPTED`, `PREPARING`, `ON_THE_WAY`, `DELIVERED`, `REJECTED`, `PAYMENT_FAILED`. |
 | PaymentStatus | `PENDING`, `UNKNOWN`, `AUTHORIZED`, `FAILED`, `REFUND_PENDING`, `REFUNDED`. |
 | RestaurantOrderStatus | `PENDING`, `ACCEPTED`, `REJECTED`, `PREPARING`. |
@@ -66,7 +66,7 @@ All payloads use JSON with camelCase fields. Fields are required unless marked o
 
 | Schema | Fields and constraints |
 | --- | --- |
-| Profile | `id: UUID`, `displayName: string[1..100]`, `email: string(email)`, `roles: Role[1..3]`, `restaurantId: UUID?`, `driverId: UUID?`, `active: boolean`. A RESTAURANT role requires restaurantId; a DRIVER role requires driverId. |
+| Profile | `id: UUID`, `displayName: string[1..100]`, `email: string(email)`, `roles: Role[1..4]`, `restaurantId: UUID?`, `driverId: UUID?`, `active: boolean`. A RESTAURANT role requires restaurantId; a DRIVER role requires driverId. |
 | Restaurant | `id: UUID`, `name: string[1..120]`, `available: boolean`. |
 | MenuItem | `id: UUID`, `restaurantId: UUID`, `name: string[1..120]`, `price: Money`, `available: boolean`, `version: integer`. |
 | RequestedItem | `menuItemId: UUID`, `quantity: integer[1..20]`. Duplicate menuItemId values are invalid. |
@@ -115,7 +115,7 @@ Only initial creation is HTTP-driven. All subsequent global order transitions re
 
 - Base path: `/api/v1`; public traffic uses HTTPS. JSON request and response bodies use `application/json`.
 - Authentication: `Authorization: Bearer <access-token>`. Gateway and services verify signature, issuer, audience and expiry. Roles do not bypass ownership checks. Service-to-service calls use service credentials, not client-supplied identity headers.
-- Login uses the identity provider's standard OIDC authorization-code flow with PKCE and discovery; credentials are not accepted by a custom EatsNow login endpoint. Restaurant/driver onboarding is administrative.
+- Login uses the identity provider's standard OIDC authorization-code flow with PKCE and discovery; credentials are not accepted by a custom EatsNow login endpoint. Customers self-register through the Identity login pages and receive only the USER role.
 - `X-Correlation-ID`: optional UUID on requests, generated when absent or invalid and returned on every response. W3C `traceparent` is propagated when valid. Each order stores its original workflow correlationId, including on later action messages.
 - Shared errors apply to **every endpoint**: `400 INVALID_REQUEST` for malformed input, `401 UNAUTHENTICATED`, `403 FORBIDDEN`, `429 RATE_LIMITED` with Retry-After, `500 INTERNAL_ERROR` for unexpected faults and `503 SERVICE_UNAVAILABLE` when the serving service cannot safely complete the operation. A downstream asynchronous outage alone does not justify a 503 on order creation.
 - Object access is restricted to its customer, owning restaurant or assigned driver as specified below. Inaccessible or absent object IDs return `404 NOT_FOUND` to prevent enumeration. Use 403 for an authenticated role that cannot call the endpoint at all.
@@ -137,6 +137,17 @@ X-Correlation-ID: 00000000-0000-4000-8000-000000000040
 | --- | --- | --- | --- | --- |
 | GET /profiles/me | Any active role; own profile | None | 200 Profile; shared 4xx/5xx | Response: `{"id":"00000000-0000-4000-8000-000000000001","displayName":"Alex","email":"alex@example.test","roles":["USER"],"active":true}`. |
 | PATCH /profiles/me | Any active role; own profile | `{displayName: string[1..100]}` only | 200 Profile; shared 4xx/5xx; 409 idempotency conflicts | Request: `{"displayName":"Alex Rivera"}`. Response: same Profile with displayName changed. Roles, email and ownership links cannot be changed here. |
+| GET /admin/profiles | ADMIN | None; pagination query plus optional `role: Role` filter | 200 paginated Profile; shared 4xx/5xx | `GET /admin/profiles?role=DRIVER`. Response: `{"items":[{"id":"00000000-0000-4000-8000-000000000021","displayName":"Sam","email":"sam@example.test","roles":["DRIVER"],"driverId":"00000000-0000-4000-8000-000000000020","active":true}],"nextCursor":null}`. |
+| POST /admin/profiles | ADMIN; requires Idempotency-Key | `{displayName: string[1..100], email: string(email), roles: Role[1..4], restaurantId: UUID?}` | 201 Profile; 409 EMAIL_ALREADY_REGISTERED or idempotency conflict; 422 INVALID_ROLE_LINK; shared 4xx/5xx | Request: `{"displayName":"Sam","email":"sam@example.test","roles":["DRIVER"]}`. Response: 201 Profile with a generated `driverId` and `active: true`. |
+| PATCH /admin/profiles/{profileId} | ADMIN; requires Idempotency-Key | `{active: boolean}` | 200 Profile; 404 NOT_FOUND; 409 idempotency conflict; shared 4xx/5xx | Request: `{"active":false}`. Response: Profile with `"active":false`. |
+
+Admin rules:
+
+- RESTAURANT requires `restaurantId` (an existing Catalog restaurant); DRIVER causes Identity to generate a `driverId`. Any other combination, such as `restaurantId` without RESTAURANT, returns `422 INVALID_ROLE_LINK`.
+- No password is sent through this API: the new user sets it on first login through the Identity activation flow.
+- Deactivating a profile revokes its refresh tokens immediately; issued access tokens stay valid until their 15-minute expiry. Inactive profiles cannot log in.
+- An ADMIN cannot deactivate their own profile (`409 INVALID_TRANSITION`).
+- The `restaurantId` and `driverId` links become token claims that Restaurants and Delivery use for ownership checks. Delivery creates the Driver record with `onDuty: false` on the first authenticated request carrying a new `driverId`.
 
 ### 3.3 Catalog and quotes
 
@@ -504,6 +515,11 @@ The system SHALL centrally manage USER, RESTAURANT and DRIVER profiles and acces
 
 - **WHEN** a DRIVER principal requests or acts on a delivery assigned to another driver
 - **THEN** the system returns 404, discloses no delivery address and publishes no event.
+
+#### Scenario: Provision restaurant and driver accounts centrally
+
+- **WHEN** an ADMIN creates a DRIVER profile, and a USER attempts the same request
+- **THEN** Identity creates the driver profile with a generated driverId for the ADMIN and returns 403 to the USER without creating any profile or role.
 
 #### Scenario: Reject an invalid access token
 

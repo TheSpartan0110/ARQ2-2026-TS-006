@@ -15,7 +15,9 @@ Currently, creating an order requires sequential synchronous calls to multiple m
 
 ## Decision
 
-Use RabbitMQ as the message broker for domain events. The Order Service will publish `OrderCreated` and coordinate the order lifecycle through events such as `PaymentAuthorized`, `RestaurantAccepted`, and `DeliveryAssigned`. No separate Orchestrator Service is introduced in the current proposal.
+Use RabbitMQ as the message broker for domain events and commands. The Order Service publishes `OrderCreated` and coordinates the order lifecycle: it consumes the result events of the other services (`PaymentAuthorized`, `PaymentFailed`, `RestaurantAccepted`, `RestaurantRejected`, `RestaurantPreparing`, `DeliveryAssigned`, `DeliveryPickedUp`, `DeliveryCompleted`, among others) and sends commands (`ChargePayment`, `RefundPayment`, `RequestRestaurantAcceptance`, `AssignDelivery`) to the service that owns each step. No separate Orchestrator Service is introduced; orchestration belongs to the Order Service.
+
+Messaging uses two durable topic exchanges, `eatsnow.events.v1` and `eatsnow.commands.v1`, one durable queue per consuming service and a dead-letter queue per queue. The complete message catalog, payloads and delivery guarantees are defined in Section 4 of `docs/spec.md`.
 
 The Transactional Outbox pattern and idempotent consumers will be implemented to improve message reliability and prevent duplicate processing from causing unintended effects.
 
