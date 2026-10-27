@@ -1,0 +1,699 @@
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "eatsnow_admin",
+      "password_hash": "3n95Jse321OtVpHPM7TH+svacoVtRRI0MP7ulpRQBGvVnM8c",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator"
+    },
+    {
+      "name": "orders_mq",
+      "password_hash": "+iA7u9hy/a+MTFA8InHqVKubckjP0I0xf6o/gTB9Log0OLbN",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    },
+    {
+      "name": "payments_mq",
+      "password_hash": "3rkC0ApW57WsJLyQJ/ZxduKb2HwxU6V/l1wWSz+VfTqNoQee",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    },
+    {
+      "name": "restaurants_mq",
+      "password_hash": "OY+6N+lMc3PXKovqrRnVSSxiNJdoCZQ9UXJk/AwvWwbaXX65",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    },
+    {
+      "name": "delivery_mq",
+      "password_hash": "w0Or/8WsNnZBOyE9oKznWCzGmPTAHYGG5Q0K+Ul/8Gz9LUFt",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    },
+    {
+      "name": "notifications_mq",
+      "password_hash": "fIF9zyWEdaxI9bT76J3/b/OFssalRY2TXvyxFxh5WDfWlqVy",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": ""
+    }
+  ],
+  "permissions": [
+    {
+      "user": "eatsnow_admin",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "orders_mq",
+      "vhost": "/",
+      "configure": "^$",
+      "write": "^(eatsnow\\.events\\.v1|eatsnow\\.commands\\.v1|eatsnow\\.retry\\.v1|eatsnow\\.dlx\\.v1)$",
+      "read": "^orders\\.events$"
+    },
+    {
+      "user": "payments_mq",
+      "vhost": "/",
+      "configure": "^$",
+      "write": "^(eatsnow\\.events\\.v1|eatsnow\\.retry\\.v1|eatsnow\\.dlx\\.v1)$",
+      "read": "^payments\\.commands$"
+    },
+    {
+      "user": "restaurants_mq",
+      "vhost": "/",
+      "configure": "^$",
+      "write": "^(eatsnow\\.events\\.v1|eatsnow\\.retry\\.v1|eatsnow\\.dlx\\.v1)$",
+      "read": "^restaurants\\.commands$"
+    },
+    {
+      "user": "delivery_mq",
+      "vhost": "/",
+      "configure": "^$",
+      "write": "^(eatsnow\\.events\\.v1|eatsnow\\.retry\\.v1|eatsnow\\.dlx\\.v1)$",
+      "read": "^delivery\\.commands$"
+    },
+    {
+      "user": "notifications_mq",
+      "vhost": "/",
+      "configure": "^$",
+      "write": "^(eatsnow\\.retry\\.v1|eatsnow\\.dlx\\.v1)$",
+      "read": "^notifications\\.events$"
+    }
+  ],
+  "exchanges": [
+    {
+      "name": "eatsnow.events.v1",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "eatsnow.commands.v1",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "eatsnow.retry.v1",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "orders.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "eatsnow.dlx.v1",
+        "x-dead-letter-routing-key": "orders.events"
+      }
+    },
+    {
+      "name": "orders.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "orders.events.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "orders.events"
+      }
+    },
+    {
+      "name": "orders.events.retry.30s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 30000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "orders.events"
+      }
+    },
+    {
+      "name": "orders.events.retry.120s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 120000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "orders.events"
+      }
+    },
+    {
+      "name": "payments.commands",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "eatsnow.dlx.v1",
+        "x-dead-letter-routing-key": "payments.commands"
+      }
+    },
+    {
+      "name": "payments.commands.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "payments.commands.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "payments.commands"
+      }
+    },
+    {
+      "name": "payments.commands.retry.30s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 30000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "payments.commands"
+      }
+    },
+    {
+      "name": "payments.commands.retry.120s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 120000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "payments.commands"
+      }
+    },
+    {
+      "name": "restaurants.commands",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "eatsnow.dlx.v1",
+        "x-dead-letter-routing-key": "restaurants.commands"
+      }
+    },
+    {
+      "name": "restaurants.commands.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "restaurants.commands.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "restaurants.commands"
+      }
+    },
+    {
+      "name": "restaurants.commands.retry.30s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 30000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "restaurants.commands"
+      }
+    },
+    {
+      "name": "restaurants.commands.retry.120s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 120000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "restaurants.commands"
+      }
+    },
+    {
+      "name": "delivery.commands",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "eatsnow.dlx.v1",
+        "x-dead-letter-routing-key": "delivery.commands"
+      }
+    },
+    {
+      "name": "delivery.commands.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "delivery.commands.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "delivery.commands"
+      }
+    },
+    {
+      "name": "delivery.commands.retry.30s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 30000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "delivery.commands"
+      }
+    },
+    {
+      "name": "delivery.commands.retry.120s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 120000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "delivery.commands"
+      }
+    },
+    {
+      "name": "notifications.events",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-dead-letter-exchange": "eatsnow.dlx.v1",
+        "x-dead-letter-routing-key": "notifications.events"
+      }
+    },
+    {
+      "name": "notifications.events.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic"
+      }
+    },
+    {
+      "name": "notifications.events.retry.5s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 5000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "notifications.events"
+      }
+    },
+    {
+      "name": "notifications.events.retry.30s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 30000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "notifications.events"
+      }
+    },
+    {
+      "name": "notifications.events.retry.120s",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "classic",
+        "x-message-ttl": 120000,
+        "x-dead-letter-exchange": "",
+        "x-dead-letter-routing-key": "notifications.events"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "destination": "orders.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "orders.events",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "OrderCreated",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "PaymentAuthorized",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "PaymentFailed",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "PaymentPendingReconciliation",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "PaymentRefunded",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "RestaurantAccepted",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "RestaurantRejected",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "RestaurantPreparing",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "DeliveryAssigned",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "DeliveryPickedUp",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "orders.events",
+      "destination_type": "queue",
+      "routing_key": "DeliveryCompleted",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "orders.events.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "orders.events.retry.5s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "orders.events.retry.30s",
+      "destination_type": "queue",
+      "routing_key": "orders.events.retry.30s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "orders.events.retry.120s",
+      "destination_type": "queue",
+      "routing_key": "orders.events.retry.120s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "destination": "payments.commands.dlq",
+      "destination_type": "queue",
+      "routing_key": "payments.commands",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.commands.v1",
+      "vhost": "/",
+      "destination": "payments.commands",
+      "destination_type": "queue",
+      "routing_key": "ChargePayment",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.commands.v1",
+      "vhost": "/",
+      "destination": "payments.commands",
+      "destination_type": "queue",
+      "routing_key": "RefundPayment",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "payments.commands.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "payments.commands.retry.5s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "payments.commands.retry.30s",
+      "destination_type": "queue",
+      "routing_key": "payments.commands.retry.30s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "payments.commands.retry.120s",
+      "destination_type": "queue",
+      "routing_key": "payments.commands.retry.120s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "destination": "restaurants.commands.dlq",
+      "destination_type": "queue",
+      "routing_key": "restaurants.commands",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.commands.v1",
+      "vhost": "/",
+      "destination": "restaurants.commands",
+      "destination_type": "queue",
+      "routing_key": "RequestRestaurantAcceptance",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "restaurants.commands.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "restaurants.commands.retry.5s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "restaurants.commands.retry.30s",
+      "destination_type": "queue",
+      "routing_key": "restaurants.commands.retry.30s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "restaurants.commands.retry.120s",
+      "destination_type": "queue",
+      "routing_key": "restaurants.commands.retry.120s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "destination": "delivery.commands.dlq",
+      "destination_type": "queue",
+      "routing_key": "delivery.commands",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.commands.v1",
+      "vhost": "/",
+      "destination": "delivery.commands",
+      "destination_type": "queue",
+      "routing_key": "AssignDelivery",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "delivery.commands.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "delivery.commands.retry.5s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "delivery.commands.retry.30s",
+      "destination_type": "queue",
+      "routing_key": "delivery.commands.retry.30s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "delivery.commands.retry.120s",
+      "destination_type": "queue",
+      "routing_key": "delivery.commands.retry.120s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.dlx.v1",
+      "vhost": "/",
+      "destination": "notifications.events.dlq",
+      "destination_type": "queue",
+      "routing_key": "notifications.events",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.events.v1",
+      "vhost": "/",
+      "destination": "notifications.events",
+      "destination_type": "queue",
+      "routing_key": "OrderStatusChanged",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "notifications.events.retry.5s",
+      "destination_type": "queue",
+      "routing_key": "notifications.events.retry.5s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "notifications.events.retry.30s",
+      "destination_type": "queue",
+      "routing_key": "notifications.events.retry.30s",
+      "arguments": {}
+    },
+    {
+      "source": "eatsnow.retry.v1",
+      "vhost": "/",
+      "destination": "notifications.events.retry.120s",
+      "destination_type": "queue",
+      "routing_key": "notifications.events.retry.120s",
+      "arguments": {}
+    }
+  ]
+}

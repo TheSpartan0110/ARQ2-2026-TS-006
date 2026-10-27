@@ -1,0 +1,66 @@
+# OpenTelemetry Collector (spec 6.1)
+#   traces: services --OTLP--> Collector --> Tempo
+#   logs:   services write JSON to stdout -> Docker json-file -> Collector (filelog) --> Loki
+# Metrics are NOT sent here: Prometheus scrapes each service directly.
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  filelog/containers:
+    include: [/var/lib/docker/containers/*/*-json.log]
+    start_at: end
+    operators:
+      # Unwraps Docker's {"log": "...", "stream": "...", "time": "..."} envelope.
+      - type: container
+        id: docker-envelope
+      # Our services log one JSON object per line (spec 6.2): lift its fields into attributes.
+      - type: json_parser
+        id: app-json
+        if: 'body matches "^\\{"'
+        on_error: send
+
+processors:
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 256
+    spike_limit_mib: 64
+
+  # Keep only EatsNow service logs (lines that carry a "service" field); drop infra noise.
+  filter/eatsnow_only:
+    error_mode: ignore
+    logs:
+      log_record:
+        - 'attributes["service"] == nil'
+
+  # Promote "service" to a resource attribute so Loki can index it as a label.
+  groupbyattrs/service:
+    keys: [service]
+
+  batch: {}
+
+exporters:
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+
+service:
+  telemetry:
+    metrics:
+      level: basic
+      address: 0.0.0.0:8888
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/tempo]
+    logs:
+      receivers: [filelog/containers]
+      processors: [memory_limiter, filter/eatsnow_only, groupbyattrs/service, batch]
+      exporters: [otlphttp/loki]

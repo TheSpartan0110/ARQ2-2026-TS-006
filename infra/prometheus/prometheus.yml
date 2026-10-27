@@ -1,0 +1,45 @@
+global:
+  scrape_interval: 15s       # spec 6.1
+  evaluation_interval: 15s
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs: [{ targets: ["prometheus:9090"] }]
+
+  - job_name: otel-collector
+    static_configs: [{ targets: ["otel-collector:8888"] }]
+
+  - job_name: rabbitmq
+    static_configs: [{ targets: ["rabbitmq:15692"] }]
+
+  - job_name: postgres
+    static_configs: [{ targets: ["postgres-exporter:9187"] }]
+
+  - job_name: redis
+    static_configs: [{ targets: ["redis-exporter:9121"] }]
+
+  - job_name: loki
+    static_configs: [{ targets: ["loki:3100"] }]
+
+  - job_name: tempo
+    static_configs: [{ targets: ["tempo:3200"] }]
+
+  - job_name: grafana
+    static_configs: [{ targets: ["grafana:3000"] }]
+
+  # EatsNow business services. Convention: management port 8081 (not routed by the Gateway, spec 6.1).
+  # Services are discovered by Docker DNS name, so adding a service to docker-compose.yml needs no change here.
+  # The `service` label is added at scrape time: services must NOT define their own `service` metric tag.
+  - job_name: eatsnow-services
+    metrics_path: /actuator/prometheus
+    dns_sd_configs:
+      - names: [gateway, identity, catalog, orders, payments, restaurants, delivery, notifications]
+        type: A
+        port: 8081
+        refresh_interval: 15s
+    relabel_configs:
+      - source_labels: [__meta_dns_name]
+        target_label: service

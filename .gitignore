@@ -1,0 +1,12 @@
+.env
+# build output
+target/
+build/
+.gradle/
+*.class
+*.log
+# IDEs
+.idea/
+.vscode/
+*.iml
+.DS_Store

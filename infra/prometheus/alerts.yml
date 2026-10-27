@@ -1,0 +1,60 @@
+# Alert rules from docs/spec.md section 6.4. Metrics appear once the services expose them.
+groups:
+  - name: eatsnow-messaging
+    rules:
+      - alert: OutboxStalled
+        expr: eatsnow_outbox_oldest_pending_seconds > 60
+        for: 1m
+        labels: { severity: critical }
+        annotations:
+          summary: "Outbox of {{ $labels.service }} has an entry pending for more than 60 s"
+      - alert: MessagesInDLQ
+        expr: rabbitmq_queue_messages_ready{queue=~".*[.]dlq"} > 0
+        labels: { severity: critical }
+        annotations:
+          summary: "Dead-letter queue {{ $labels.queue }} contains messages"
+      - alert: PrerequisiteWaitTooLong
+        expr: eatsnow_pending_messages_oldest_seconds > 300
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.service }} holds a premature message waiting more than 5 min"
+
+  - name: eatsnow-business
+    rules:
+      - alert: PaymentUnresolved
+        expr: eatsnow_payment_unresolved_oldest_seconds > 300
+        labels: { severity: critical }
+        annotations:
+          summary: "A {{ $labels.operation }} payment has no definitive outcome after 5 min"
+      - alert: DeliveryUnassigned
+        expr: eatsnow_deliveries_unassigned_oldest_seconds > 600
+        labels: { severity: warning }
+        annotations:
+          summary: "A delivery has been UNASSIGNED for more than 10 min"
+
+  - name: eatsnow-platform
+    rules:
+      - alert: HighServerErrorRate
+        expr: |
+          sum by (service) (rate(http_server_requests_seconds_count{status=~"5.."}[5m]))
+            / sum by (service) (rate(http_server_requests_seconds_count[5m])) > 0.01
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.service }} 5xx rate is above 1%"
+      - alert: CatalogSlow
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_server_requests_seconds_bucket{service="catalog"}[5m]))) > 0.3
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Catalog p95 latency is above 300 ms"
+      - alert: CatalogCacheErrors
+        expr: |
+          sum(rate(eatsnow_catalog_cache_requests_total{result="error"}[5m]))
+            / sum(rate(eatsnow_catalog_cache_requests_total[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations:
+          summary: "Redis errors exceed 5% of catalog cache requests"

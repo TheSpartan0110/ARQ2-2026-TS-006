@@ -1,0 +1,190 @@
+# EatsNow - Wave 2 base infrastructure (Step 1)
+# Business services (gateway, identity, ...) are added in later steps.
+# Every default below is a LOCAL DEVELOPMENT value. Override through .env; never commit real secrets.
+name: eatsnow
+
+networks:
+  eatsnow:
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
+  prometheus-data:
+  loki-data:
+  tempo-data:
+  grafana-data:
+
+# Environment every business service will reuse (see infra/README.md, "Plugging a service in").
+x-service-telemetry-env: &service-telemetry-env
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+  OTEL_TRACES_SAMPLER: parentbased_always_on   # 100% sampling in Wave 2 (spec 6.3)
+  OTEL_METRICS_EXPORTER: none                  # metrics are scraped by Prometheus
+  OTEL_LOGS_EXPORTER: none                     # logs go to stdout -> Collector reads container logs
+
+services:
+  # ---------------------------------------------------------------- data stores
+  postgres:
+    image: postgres:16-alpine
+    command: ["postgres", "-c", "max_connections=200"]
+    environment:
+      POSTGRES_DB: eatsnow
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_dev_pw}
+      IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:-identity_dev_pw}
+      CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:-catalog_dev_pw}
+      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD:-orders_dev_pw}
+      PAYMENTS_DB_PASSWORD: ${PAYMENTS_DB_PASSWORD:-payments_dev_pw}
+      RESTAURANTS_DB_PASSWORD: ${RESTAURANTS_DB_PASSWORD:-restaurants_dev_pw}
+      DELIVERIES_DB_PASSWORD: ${DELIVERIES_DB_PASSWORD:-deliveries_dev_pw}
+      NOTIFICATIONS_DB_PASSWORD: ${NOTIFICATIONS_DB_PASSWORD:-notifications_dev_pw}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init-schemas.sh:/docker-entrypoint-initdb.d/10-init-schemas.sh:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d eatsnow"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [eatsnow]
+
+  redis:
+    image: redis:7-alpine
+    # Cache only (ADR 002): PostgreSQL is the source of truth, so no persistence is needed.
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [eatsnow]
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    hostname: rabbitmq
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./infra/rabbitmq/rabbitmq.conf:/etc/rabbitmq/conf.d/20-eatsnow.conf:ro
+      - ./infra/rabbitmq/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
+      - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
+    ports:
+      - "5672:5672"     # AMQP
+      - "15672:15672"   # management UI (user: eatsnow_admin)
+      - "15692:15692"   # Prometheus metrics
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+    networks: [eatsnow]
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    ports:
+      - "1025:1025"   # SMTP (Notifications service, ADR 006)
+      - "8025:8025"   # web inbox
+    networks: [eatsnow]
+
+  # ---------------------------------------------------------------- observability
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.114.0
+    command: ["--config=/etc/otelcol/config.yaml"]
+    user: "0:0"   # needed to read /var/lib/docker/containers
+    volumes:
+      - ./infra/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    ports:
+      - "4317:4317"   # OTLP gRPC
+      - "4318:4318"   # OTLP HTTP
+    depends_on: [tempo, loki]
+    networks: [eatsnow]
+
+  tempo:
+    image: grafana/tempo:2.6.1
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./infra/tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    networks: [eatsnow]
+
+  loki:
+    image: grafana/loki:3.2.1
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./infra/loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"
+    networks: [eatsnow]
+
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=7d
+      - --web.enable-lifecycle
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    networks: [eatsnow]
+
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.15.0
+    environment:
+      DATA_SOURCE_NAME: postgresql://postgres:${POSTGRES_PASSWORD:-postgres_dev_pw}@postgres:5432/eatsnow?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.66.0
+    environment:
+      REDIS_ADDR: redis://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  grafana:
+    image: grafana/grafana:11.3.0
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin_dev_pw}
+      GF_AUTH_ANONYMOUS_ENABLED: "false"     # login required (spec 6.5)
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    ports:
+      - "3000:3000"
+    depends_on: [prometheus, loki, tempo]
+    networks: [eatsnow]
+
+  # ---------------------------------------------------------------- business services
+  # Added in the next steps. Example of how one plugs in:
+  #
+  # orders:
+  #   build: ./services/orders
+  #   environment:
+  #     <<: *service-telemetry-env
+  #     OTEL_SERVICE_NAME: orders
+  #     DB_URL: jdbc:postgresql://postgres:5432/eatsnow
+  #     DB_USER: orders_svc
+  #     DB_PASSWORD: ${ORDERS_DB_PASSWORD:-orders_dev_pw}
+  #     RABBITMQ_HOST: rabbitmq
+  #     RABBITMQ_USER: orders_mq
+  #     RABBITMQ_PASSWORD: ${ORDERS_MQ_PASSWORD:-orders_mq_dev_pw}
+  #   depends_on:
+  #     postgres: { condition: service_healthy }
+  #     rabbitmq: { condition: service_healthy }
+  #   networks: [eatsnow]

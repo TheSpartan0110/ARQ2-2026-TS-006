@@ -1,6 +1,6 @@
 # EatsNow Contract Specification
 
-Status: Complete draft - pending team review | Version: 1.0.0 | Team: TS-006
+Status: Complete draft -  | Version: 1.1.0 | Team: TS-006
 
 ## Purpose
 
@@ -8,7 +8,7 @@ Define the observable contracts and acceptance requirements for EatsNow, ensurin
 
 This single-file academic deliverable remains at `docs/spec.md` as required by the assignment. Section 5 uses OpenSpec requirement and scenario syntax; the supporting sections organize the required domain, REST and messaging contracts. This document is a baseline specification, not an OpenSpec change delta or an initialized CLI workspace.
 
-Container names, technologies and integration paths follow the official C4 Level 2 container diagram (`docs/assets/Modeloc4gp6.drawio.png`). Where the assignment requires something the diagram does not yet show (the events needed for the mandatory order states, Prometheus metrics, Tempo traces and the Notification Service), this specification adds it and the diagram must be updated to match.
+Container names, technologies and integration paths follow the official C4 Level 2 container diagram (`docs/assets/Modeloc4gp6.drawio.png`). Where the assignment requires something the diagram does not yet show (the events needed for the mandatory order states, Prometheus metrics, Tempo traces and the Notification Service), this specification adds it and the diagram is updated.
 
 ## 1. Overview
 
