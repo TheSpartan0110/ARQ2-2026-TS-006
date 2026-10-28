@@ -244,4 +244,72 @@ class ProfileControllerWebTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.keys[0].kty").value("RSA"));
     }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/token - Returns 400 when email or password is blank")
+    void testCreateToken_BlankCredentials_Returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/token")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"\",\"password\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/admin/profiles - Returns 400 when displayName or email is invalid")
+    @WithMockUser(username = "00000000-0000-4000-8000-000000000099", roles = "ADMIN")
+    void testAdminCreateProfile_InvalidFields_Returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/profiles")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"\",\"email\":\"not-an-email\",\"roles\":[]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/admin/profiles - Returns 400 when missing Idempotency-Key header")
+    @WithMockUser(username = "00000000-0000-4000-8000-000000000099", roles = "ADMIN")
+    void testAdminCreateProfile_MissingIdempotencyKey_Returns400() throws Exception {
+        mockMvc.perform(post("/api/v1/admin/profiles")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"displayName\":\"Sam\",\"email\":\"sam@example.test\",\"roles\":[\"DRIVER\"]}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/v1/admin/profiles/{profileId} - Returns 400 when missing Idempotency-Key header")
+    @WithMockUser(username = "00000000-0000-4000-8000-000000000099", roles = "ADMIN")
+    void testAdminUpdateStatus_MissingIdempotencyKey_Returns400() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/profiles/" + userId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"active\":false}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/v1/admin/profiles/{profileId} - Returns 400 when active field is null")
+    @WithMockUser(username = "00000000-0000-4000-8000-000000000099", roles = "ADMIN")
+    void testAdminUpdateStatus_NullActive_Returns400() throws Exception {
+        mockMvc.perform(patch("/api/v1/admin/profiles/" + userId)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
+
+    @Test
+    @DisplayName("PATCH /api/v1/profiles/me - Returns 400 on malformed JSON payload")
+    @WithMockUser(username = "00000000-0000-4000-8000-000000000001", roles = "USER")
+    void testUpdateMyProfile_MalformedJson_Returns400() throws Exception {
+        mockMvc.perform(patch("/api/v1/profiles/me")
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{malformed json!!}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+    }
 }

@@ -80,4 +80,52 @@ class RsaTokenIssuerTest {
     void testValidateAndParse_CorruptedToken() {
         assertNull(tokenIssuer.validateAndParse("invalid.jwt.token"));
     }
+
+    @Test
+    @DisplayName("Should fail validation if token signature has been tampered with")
+    void testValidateAndParse_TamperedSignature() {
+        Profile profile = new Profile(
+                UUID.randomUUID(), "Tamper Test", "tamper@test.com", Set.of(Role.USER),
+                null, null, "h", true, Instant.now(), Instant.now()
+        );
+        IssuedToken issued = tokenIssuer.issueToken(profile);
+        String validToken = issued.token();
+
+        // Tamper with the last 5 characters of the signature
+        String tampered = validToken.substring(0, validToken.length() - 5) + "ABCDE";
+        assertNull(tokenIssuer.validateAndParse(tampered), "Tampered token must fail validation");
+    }
+
+    @Test
+    @DisplayName("Should fail validation if token is signed with a different RSA key")
+    void testValidateAndParse_DifferentKey() {
+        RsaTokenIssuer otherIssuer = new RsaTokenIssuer();
+        otherIssuer.init();
+
+        Profile profile = new Profile(
+                UUID.randomUUID(), "Other", "other@test.com", Set.of(Role.USER),
+                null, null, "h", true, Instant.now(), Instant.now()
+        );
+        IssuedToken otherToken = otherIssuer.issueToken(profile);
+
+        assertNull(tokenIssuer.validateAndParse(otherToken.token()), "Token signed by another key must fail validation");
+    }
+
+    @Test
+    @DisplayName("Should populate driverId claim when profile has DRIVER role")
+    void testIssueToken_DriverClaim() throws Exception {
+        UUID profileId = UUID.randomUUID();
+        UUID driverId = UUID.randomUUID();
+        Profile driverProfile = new Profile(
+                profileId, "Driver Dan", "dan@driver.test", Set.of(Role.DRIVER),
+                null, driverId, "h", true, Instant.now(), Instant.now()
+        );
+
+        IssuedToken issued = tokenIssuer.issueToken(driverProfile);
+        JWTClaimsSet claims = tokenIssuer.validateAndParse(issued.token());
+
+        assertNotNull(claims);
+        assertEquals(driverId.toString(), claims.getStringClaim("driverId"));
+        assertNull(claims.getStringClaim("restaurantId"));
+    }
 }
