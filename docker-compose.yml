@@ -193,3 +193,20 @@ services:
         condition: service_healthy
     networks: [eatsnow]
 
+  identity:
+    build:
+      context: ./services
+      dockerfile: identity/Dockerfile
+    environment:
+      <<: *service-telemetry-env
+      OTEL_SERVICE_NAME: identity
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=identity
+      DB_USER: identity_svc
+      IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:-identity_dev_pw}
+    ports:
+      - "8082:8080"
+      - "8083:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks: [eatsnow]
