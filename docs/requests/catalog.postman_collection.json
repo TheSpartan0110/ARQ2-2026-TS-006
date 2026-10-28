@@ -1,0 +1,195 @@
+{
+  "info": {
+    "_postman_id": "c71a39f0-6c92-4e2b-a17b-d4566c7b9e11",
+    "name": "EatsNow - Catalog Service",
+    "description": "Postman Collection for EatsNow Catalog Service (Spec 2.2, 2.3, 3.3, ADR 002). Tests restaurant listings, menu queries, Redis caching, and quote creation signed with asymmetric RS256.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "userToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "restaurantId",
+      "value": "00000000-0000-4000-8000-000000000002",
+      "type": "string"
+    },
+    {
+      "key": "menuItemId",
+      "value": "00000000-0000-4000-8000-000000000003",
+      "type": "string"
+    },
+    {
+      "key": "quoteToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Restaurants & Menus",
+      "item": [
+        {
+          "name": "1. List Restaurants (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/restaurants?limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "restaurants"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Returns a paginated list of active restaurants with cursor support (Spec 3.3)."
+          }
+        },
+        {
+          "name": "2. Get Restaurant by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/restaurants/{{restaurantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "restaurants", "{{restaurantId}}"]
+            },
+            "description": "Retrieves restaurant details. Cached in Redis (ADR 002)."
+          }
+        },
+        {
+          "name": "3. Get Restaurant Menu Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/restaurants/{{restaurantId}}/menu",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "restaurants", "{{restaurantId}}", "menu"]
+            },
+            "description": "Retrieves the full menu items for a restaurant with minor-unit Money prices."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Checkout Quotations",
+      "item": [
+        {
+          "name": "1. Create Quote (Signed Token, 120s TTL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var json = pm.response.json();",
+                  "    pm.collectionVariables.set('quoteToken', json.quoteToken);",
+                  "    console.log('Saved quoteToken to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{userToken}}",
+                "description": "Optional in standalone test; extracted by Gateway in production"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "{{$guid}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"restaurantId\": \"{{restaurantId}}\",\n  \"items\": [\n    {\n      \"menuItemId\": \"{{menuItemId}}\",\n      \"quantity\": 2\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/quotes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "quotes"]
+            },
+            "description": "Calculates checkout quote against PostgreSQL, commits idempotency, and signs an asymmetric RS256 quoteToken with 120s TTL (Spec 2.3 & 3.3)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Actuator & Observability (Management Port)",
+      "item": [
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/actuator/prometheus",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "prometheus"]
+            },
+            "description": "Prometheus metric scrape endpoint on management port 8081."
+          }
+        },
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:8081/actuator/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8081",
+              "path": ["actuator", "health"]
+            },
+            "description": "Service health check on management port."
+          }
+        }
+      ]
+    }
+  ]
+}
