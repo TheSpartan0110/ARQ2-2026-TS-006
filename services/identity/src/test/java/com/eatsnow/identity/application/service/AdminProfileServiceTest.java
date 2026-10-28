@@ -216,6 +216,55 @@ class AdminProfileServiceTest {
     }
 
     @Test
+    @DisplayName("Should clamp limit parameters between 1 and 100")
+    void testListProfiles_LimitClamping() {
+        when(profileRepository.findAll(anyInt(), any(), any()))
+                .thenReturn(new PageResult<>(List.of(), null));
+
+        // Limit <= 0 clamped to 1
+        adminProfileService.listProfiles(0, null, null);
+        verify(profileRepository).findAll(1, null, null);
+
+        // Limit > 100 clamped to 100
+        adminProfileService.listProfiles(250, null, null);
+        verify(profileRepository).findAll(100, null, null);
+    }
+
+    @Test
+    @DisplayName("Should normalize email to lowercase when creating profile")
+    void testCreateProfile_EmailNormalized() {
+        when(profileRepository.existsByEmail("alex@example.test")).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("hashed");
+        when(profileRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        Profile created = adminProfileService.createProfile(
+                adminId, "Alex", "ALEX@EXAMPLE.TEST", Set.of(Role.USER), null, null, null
+        );
+
+        assertEquals("alex@example.test", created.email(), "Email must be normalized to lowercase");
+    }
+
+    @Test
+    @DisplayName("Should reject blank or excessively long display names")
+    void testCreateProfile_InvalidDisplayName() {
+        // Blank
+        assertThrows(InvalidRequestException.class, () ->
+                adminProfileService.createProfile(adminId, "   ", "a@b.com", Set.of(Role.USER), null, null, null));
+
+        // Over 100 chars
+        String longName = "A".repeat(101);
+        assertThrows(InvalidRequestException.class, () ->
+                adminProfileService.createProfile(adminId, longName, "a@b.com", Set.of(Role.USER), null, null, null));
+    }
+
+    @Test
+    @DisplayName("Should reject empty roles set")
+    void testCreateProfile_EmptyRoles_ThrowsException() {
+        assertThrows(InvalidRequestException.class, () ->
+                adminProfileService.createProfile(adminId, "Name", "test@b.com", Set.of(), null, null, null));
+    }
+
+    @Test
     @DisplayName("Should throw 404 EntityNotFoundException when profile to update does not exist")
     void testUpdateProfileStatus_NotFound_Throws404() {
         when(profileRepository.findById(targetProfileId)).thenReturn(Optional.empty());
