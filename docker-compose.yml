@@ -171,20 +171,25 @@ services:
     networks: [eatsnow]
 
   # ---------------------------------------------------------------- business services
-  # Added in the next steps. Example of how one plugs in:
-  #
-  # orders:
-  #   build: ./services/orders
-  #   environment:
-  #     <<: *service-telemetry-env
-  #     OTEL_SERVICE_NAME: orders
-  #     DB_URL: jdbc:postgresql://postgres:5432/eatsnow
-  #     DB_USER: orders_svc
-  #     DB_PASSWORD: ${ORDERS_DB_PASSWORD:-orders_dev_pw}
-  #     RABBITMQ_HOST: rabbitmq
-  #     RABBITMQ_USER: orders_mq
-  #     RABBITMQ_PASSWORD: ${ORDERS_MQ_PASSWORD:-orders_mq_dev_pw}
-  #   depends_on:
-  #     postgres: { condition: service_healthy }
-  #     rabbitmq: { condition: service_healthy }
-  #   networks: [eatsnow]
+  catalog:
+    build:
+      context: ./services
+      dockerfile: catalog/Dockerfile
+    environment:
+      <<: *service-telemetry-env
+      OTEL_SERVICE_NAME: catalog
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=catalog
+      DB_USER: catalog_svc
+      CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:-catalog_dev_pw}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks: [eatsnow]
+
