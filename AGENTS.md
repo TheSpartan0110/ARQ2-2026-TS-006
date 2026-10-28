@@ -22,6 +22,7 @@ The `services/common` library (`com.eatsnow:common`) contains all platform-wide 
 | Component | Fully Qualified Name | Purpose |
 |---|---|---|
 | `Money` | `com.eatsnow.common.domain.model.Money` | Currency in minor units (`amountMinor`, `currency = "COP"`). |
+| `Role` | `com.eatsnow.common.domain.model.Role` | System roles (`USER`, `RESTAURANT`, `DRIVER`, `ADMIN`). |
 | `PageResult<T>` | `com.eatsnow.common.domain.model.PageResult` | Domain container for cursor-based pagination. |
 | `PaginatedResponseDto<T>` | `com.eatsnow.common.web.dto.PaginatedResponseDto` | Web response envelope for `items` and `nextCursor`. |
 | `IdempotencyEntry` | `com.eatsnow.common.domain.model.IdempotencyEntry` | Model for tracking request hashes and responses. |
