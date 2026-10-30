@@ -22,3 +22,4 @@ export interface ErrorResponse {
   correlationId: string
   details?: Record<string, unknown> | null
 }
+
