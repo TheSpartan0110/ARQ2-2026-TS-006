@@ -26,10 +26,11 @@ CREATE TABLE IF NOT EXISTS identity.idempotency_records (
 );
 
 -- Initial seed data for system profiles (Spec 3.2)
--- Default password: password123 ($2a$10$dG7K7kO5QY9fS9bN6D8gG.5Gk7N3O/K9m8W6lY2s1oD4d5g6e7f8a - standard test bcrypt)
+-- Default password: password123
 INSERT INTO identity.profiles (id, display_name, email, roles, restaurant_id, driver_id, password_hash, active, created_at, updated_at)
 VALUES 
-    ('00000000-0000-4000-8000-000000000001', 'Alex', 'alex@example.test', 'USER', NULL, NULL, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, NOW(), NOW()),
-    ('00000000-0000-4000-8000-000000000099', 'Admin Operator', 'admin@eatsnow.test', 'ADMIN', NULL, NULL, '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, NOW(), NOW()),
-    ('00000000-0000-4000-8000-000000000021', 'Sam', 'sam@example.test', 'DRIVER', NULL, '00000000-0000-4000-8000-000000000020', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', TRUE, NOW(), NOW())
+    ('00000000-0000-4000-8000-000000000001', 'Alex', 'alex@example.test', 'USER', NULL, NULL, '$2a$10$g9VW6O/YPxuta1zPJYa2YuRkzLQnknLX9y2rk5tc0p/HJB8tA1As.', TRUE, NOW(), NOW()),
+    ('00000000-0000-4000-8000-000000000099', 'Admin Operator', 'admin@eatsnow.test', 'ADMIN', NULL, NULL, '$2a$10$g9VW6O/YPxuta1zPJYa2YuRkzLQnknLX9y2rk5tc0p/HJB8tA1As.', TRUE, NOW(), NOW()),
+    ('00000000-0000-4000-8000-000000000021', 'Sam', 'sam@example.test', 'DRIVER', NULL, '00000000-0000-4000-8000-000000000020', '$2a$10$g9VW6O/YPxuta1zPJYa2YuRkzLQnknLX9y2rk5tc0p/HJB8tA1As.', TRUE, NOW(), NOW()),
+    ('00000000-0000-4000-8000-000000000010', 'Elena (Bistro)', 'elena@example.test', 'RESTAURANT', '00000000-0000-4000-8000-000000000050', NULL, '$2a$10$g9VW6O/YPxuta1zPJYa2YuRkzLQnknLX9y2rk5tc0p/HJB8tA1As.', TRUE, NOW(), NOW())
 ON CONFLICT (id) DO NOTHING;
