@@ -9,6 +9,7 @@ interface AuthContextType {
   error: string | null
   login: (email: string, pass: string) => Promise<void>
   logout: () => void
+  refreshProfile: () => Promise<void>
   updateDisplayName: (displayName: string) => Promise<void>
   clearError: () => void
 }
@@ -76,6 +77,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setError(null)
   }
 
+  const refreshProfile = async () => {
+    if (!token) return
+    try {
+      const refreshed = await authApi.getProfile(token)
+      setProfile(refreshed)
+    } catch (err: unknown) {
+      if (err instanceof ApiError) {
+        setError(`${err.code}: ${err.message}`)
+      }
+      throw err
+    }
+  }
+
   const updateDisplayName = async (newDisplayName: string) => {
     if (!token) return
     setIsLoading(true)
@@ -106,6 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         error,
         login,
         logout,
+        refreshProfile,
         updateDisplayName,
         clearError,
       }}
@@ -122,3 +137,4 @@ export const useAuth = (): AuthContextType => {
   }
   return context
 }
+

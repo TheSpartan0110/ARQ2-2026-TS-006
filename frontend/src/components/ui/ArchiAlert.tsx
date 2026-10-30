@@ -1,9 +1,9 @@
 import React from 'react'
-import { AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Info, AlertTriangle } from 'lucide-react'
 import { cn } from '../../utils/cn'
 
 export interface ArchiAlertProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'error' | 'success' | 'info'
+  variant?: 'info' | 'success' | 'warning' | 'error'
   title?: string
   children: React.ReactNode
 }
@@ -15,31 +15,41 @@ export const ArchiAlert: React.FC<ArchiAlertProps> = ({
   children,
   ...props
 }) => {
-  const icons = {
-    error: <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />,
-    success: <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />,
-    info: <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />,
+  const styles = {
+    info: {
+      container: 'bg-sky-50/90 border-sky-200/80 text-sky-900',
+      icon: <Info className="w-5 h-5 text-sky-600 shrink-0" />,
+    },
+    success: {
+      container: 'bg-emerald-50/90 border-emerald-200/80 text-emerald-950',
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />,
+    },
+    warning: {
+      container: 'bg-amber-50/90 border-amber-200/80 text-amber-950',
+      icon: <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />,
+    },
+    error: {
+      container: 'bg-rose-50/90 border-rose-200/80 text-rose-950',
+      icon: <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />,
+    },
   }
 
-  const styles = {
-    error: 'bg-rose-50 border-rose-200 text-rose-900',
-    success: 'bg-emerald-50 border-emerald-200 text-emerald-900',
-    info: 'bg-blue-50 border-blue-200 text-blue-900',
-  }
+  const current = styles[variant]
 
   return (
     <div
+      role="alert"
       className={cn(
-        'flex gap-3 p-4 rounded-xl border text-sm',
-        styles[variant],
+        'flex items-start gap-3 p-4 rounded-xl border backdrop-blur-md shadow-xs animate-in fade-in slide-in-from-top-1 duration-200',
+        current.container,
         className
       )}
       {...props}
     >
-      {icons[variant]}
-      <div className="flex flex-col gap-0.5">
-        {title && <span className="font-semibold text-slate-900">{title}</span>}
-        <div>{children}</div>
+      <div className="pt-0.5">{current.icon}</div>
+      <div className="flex flex-col gap-0.5 text-sm leading-relaxed">
+        {title && <span className="font-bold text-slate-900">{title}</span>}
+        <div className="text-slate-700 text-xs sm:text-sm">{children}</div>
       </div>
     </div>
   )
