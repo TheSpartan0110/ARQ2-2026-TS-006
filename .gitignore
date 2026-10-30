@@ -11,5 +11,9 @@ build/
 *.iml
 .DS_Store
 
+# Node / Frontend
+node_modules/
+dist/
+
 .projectmem/
 .codegraph/
