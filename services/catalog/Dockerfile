@@ -1,13 +1,13 @@
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /workspace
 
-# Copy parent POM and module definitions
-COPY pom.xml ./
+# Install common library into local maven repo
 COPY common ./common
-COPY catalog ./catalog
+RUN mvn -f common/pom.xml clean install -DskipTests
 
-# Build common dependency and catalog package
-RUN mvn clean package -DskipTests -pl common,catalog -am
+# Build catalog service package
+COPY catalog ./catalog
+RUN mvn -f catalog/pom.xml clean package -DskipTests
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
