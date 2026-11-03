@@ -38,7 +38,13 @@ public class TraceSupport {
             Map<String, String> carrier = Map.of(TRACEPARENT, traceparent);
             return propagator.extract(carrier, Map::get).name(name).kind(kind).start();
         }
-        return tracer.nextSpan().name(name).kind(kind).start();
+        // Span has no kind() in Micrometer Tracing 1.3: build the span to set its kind.
+        Span.Builder builder = tracer.spanBuilder().name(name).kind(kind);
+        Span current = tracer.currentSpan();
+        if (current != null) {
+            builder.setParent(current.context());
+        }
+        return builder.start();
     }
 
     /** Makes the span current (also fills traceId/spanId in the logs) until the returned scope is closed. */

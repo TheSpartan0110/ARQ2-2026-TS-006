@@ -67,7 +67,7 @@ public class DriverEntity {
         this.profileId = profileId;
     }
 
-    public boolean getOnDuty() {
+    public boolean isOnDuty() {
         return onDuty;
     }
 
