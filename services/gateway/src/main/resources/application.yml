@@ -1,0 +1,73 @@
+server:
+  port: 8080
+
+management:
+  server:
+    port: 8081 # Spec 6.1: Management port not routed by the Gateway, scraped by Prometheus
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0 # Spec 6.3
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACES_ENDPOINT:http://otel-collector:4318/v1/traces}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+spring:
+  application:
+    name: gateway
+  main:
+    banner-mode: off
+  reactor:
+    context-propagation: auto # keeps the trace context across reactive threads
+  cloud:
+    gateway:
+      httpclient:
+        connect-timeout: 2000
+        response-timeout: 10s
+      routes:
+        # Public: login and the Identity public keys. Everything else requires a valid access token.
+        - id: identity-public
+          uri: ${IDENTITY_URL:http://identity:8080}
+          predicates:
+            - Path=/api/v1/auth/**,/.well-known/jwks.json,/oauth2/jwks
+        - id: identity
+          uri: ${IDENTITY_URL:http://identity:8080}
+          predicates:
+            - Path=/api/v1/profiles/**,/api/v1/admin/**
+        # /api/v1/catalog/jwks.json is internal and deliberately not routed
+        - id: catalog
+          uri: ${CATALOG_URL:http://catalog:8080}
+          predicates:
+            - Path=/api/v1/restaurants/**,/api/v1/quotes
+        - id: orders
+          uri: ${ORDERS_URL:http://orders:8080}
+          predicates:
+            - Path=/api/v1/orders/**
+        - id: restaurants
+          uri: ${RESTAURANTS_URL:http://restaurants:8080}
+          predicates:
+            - Path=/api/v1/restaurant-orders/**
+        - id: delivery
+          uri: ${DELIVERY_URL:http://delivery:8080}
+          predicates:
+            - Path=/api/v1/drivers/**,/api/v1/deliveries/**
+        # /internal/** (for example Identity's contact endpoint) is never routed: it is not public (Spec 3.7)
+
+eatsnow:
+  jwks:
+    identity-url: ${IDENTITY_JWKS_URL:http://identity:8080/.well-known/jwks.json}
+
+logging:
+  level:
+    root: INFO
+    com.eatsnow.gateway: DEBUG

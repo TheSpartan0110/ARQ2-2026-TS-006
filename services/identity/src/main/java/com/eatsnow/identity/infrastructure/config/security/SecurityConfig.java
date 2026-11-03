@@ -72,6 +72,8 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/.well-known/**", "/oauth2/**").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        // internal endpoint for Notifications: authorized by X-Service-Key in the controller (Spec 3.7)
+                        .requestMatchers("/internal/**").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/profiles/**").authenticated()
                         .anyRequest().authenticated()

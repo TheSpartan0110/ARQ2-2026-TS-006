@@ -17,3 +17,6 @@ dist/
 
 .projectmem/
 .codegraph/
+
+# local patch files
+*.patch

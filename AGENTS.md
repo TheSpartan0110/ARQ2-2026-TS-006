@@ -34,6 +34,23 @@ The `services/common` library (`com.eatsnow:common`) contains all platform-wide 
 | `DomainException` + subtypes | `com.eatsnow.common.domain.exception.*` | `EntityNotFoundException` (404), `InvalidRequestException` (400), `ItemUnavailableException` (409), `IdempotencyConflictException` (409), `RequestInProgressException` (409). |
 | `MessageEnvelope<T>` | `com.eatsnow.common.messaging.MessageEnvelope` | Common RabbitMQ envelope carrying `messageId`, `correlationId`, `traceparent`, `causationId`. |
 
+### 2.1 Messaging toolkit (`services/messaging`)
+
+Services that publish or consume RabbitMQ messages (Orders, Payments, and the next ones) add a second dependency and
+**must not reimplement** the reliable-messaging plumbing (Spec 4.1-4.3):
+
+| Component | Fully Qualified Name | Purpose |
+|---|---|---|
+| `OutboxWriter` | `com.eatsnow.messaging.outbox.OutboxWriter` | Writes a `MessageEnvelope` to the `outbox` table inside the caller's transaction. |
+| `OutboxRelay` | `com.eatsnow.messaging.relay.OutboxRelay` | Publishes outbox rows with broker confirms (auto-configured, `@Scheduled`). |
+| `EnvelopeConsumer` | `com.eatsnow.messaging.consumer.EnvelopeConsumer` | Idempotent consumer: dedup + handler in one transaction, retry queues 5/30/120 s, then DLQ. |
+| `Payloads`, `MessageTypes` | `com.eatsnow.messaging.contract` / `.support` | Payload records and message/exchange names of Spec 4.2. |
+
+Usage rules: add `classpath:db/messaging` to `spring.flyway.locations` (creates `outbox` and `processed_messages`), declare
+domain ports in `domain/port/out/` (for example `OrderEventPublisherPort`), implement them in
+`infrastructure/adapter/out/messaging/` on top of `OutboxWriter`, and consume through a `@RabbitListener` that delegates to
+`EnvelopeConsumer`. Dockerfiles must `mvn install` both `common` and `messaging` before building the service.
+
 Every new service POM must include:
 ```xml
 <dependency>

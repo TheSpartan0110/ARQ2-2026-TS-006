@@ -53,11 +53,15 @@ The consumer counts attempts (header `x-death` or its own) and chooses 5s, 30s, 
 
 ## Plugging a service in
 
-1. Add it to `docker-compose.yml` (see the commented `orders` example) with `OTEL_SERVICE_NAME=<name>`.
-2. Expose Actuator on **management port 8081** (`management.server.port=8081`, endpoint `prometheus`).
-3. Do **not** add a `service` tag to metrics: Prometheus adds it at scrape time.
-4. Log one JSON object per line with at least `timestamp, level, service, operation, outcome, traceId, spanId` (spec 6.2).
-   Without the `service` field the line is dropped by the Collector.
+1. Add it to `docker-compose.yml` (copy `orders`) with its own `DB_URL`/`DB_USER` and RabbitMQ credentials.
+2. Set `spring.application.name`: it becomes the trace `service.name` and the `service` field of every log line.
+3. Expose Actuator on **management port 8081**; Prometheus discovers `<service>:8081` by Docker DNS name.
+4. Add `micrometer-tracing-bridge-otel` and `opentelemetry-exporter-otlp`, and set
+   `management.otlp.tracing.endpoint=http://otel-collector:4318/v1/traces` (Spring Boot does **not** read `OTEL_*`
+   variables; those only work with the Java agent).
+5. Do **not** add a `service` tag to metrics: Prometheus adds it at scrape time.
+6. `logback-spring.xml` must emit JSON with `"service": "<name>"` and the `<arguments/>` provider (so
+   `kv("operation", ...)` becomes a field). Without the `service` field the Collector drops the line.
 
 ## Known caveats
 

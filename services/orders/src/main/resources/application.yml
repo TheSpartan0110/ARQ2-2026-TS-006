@@ -1,0 +1,81 @@
+server:
+  port: 8080
+
+management:
+  server:
+    port: 8081 # Spec 6.1: Management port not routed by Gateway, scraped by Prometheus
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: when_authorized
+  tracing:
+    sampling:
+      probability: 1.0 # Spec 6.3: 100% sampling in Wave 2
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACES_ENDPOINT:http://otel-collector:4318/v1/traces}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+
+spring:
+  application:
+    name: orders
+  main:
+    banner-mode: off
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://postgres:5432/eatsnow?currentSchema=orders}
+    username: ${DB_USER:orders_svc}
+    password: ${ORDERS_DB_PASSWORD:orders_dev_pw}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: orders
+        format_sql: false
+  flyway:
+    enabled: true
+    schemas: orders
+    create-schemas: false # the schema already exists and belongs to orders_svc (infra/postgres)
+    locations: classpath:db/messaging,classpath:db/migration
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true # Spec 2.1: unknown request fields are rejected
+  rabbitmq:
+    host: ${RABBITMQ_HOST:rabbitmq}
+    port: 5672
+    username: ${RABBITMQ_USER:orders_mq}
+    password: ${ORDERS_MQ_PASSWORD:orders_mq_dev_pw}
+    connection-timeout: 3s
+    publisher-confirm-type: correlated # required by MessagePublisher.waitForConfirms
+    listener:
+      simple:
+        prefetch: 10 # Spec 4.2.1
+        default-requeue-rejected: false # a rejected message goes to the DLQ and never loops
+
+eatsnow:
+  payment:
+    token-key: ${EATSNOW_PAYMENT_TOKEN_KEY:ZWF0c25vdy1kZXYtcGF5bWVudC10b2tlbi1rZXktMzI=} # DEV ONLY
+  security:
+    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/.well-known/jwks.json}
+    required-role: USER
+  jwks:
+    catalog-url: ${CATALOG_JWKS_URL:http://catalog:8080/api/v1/catalog/jwks.json}
+
+logging:
+  level:
+    root: INFO
+    com.eatsnow.orders: DEBUG

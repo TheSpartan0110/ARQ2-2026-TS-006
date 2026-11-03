@@ -210,3 +210,127 @@ services:
       postgres:
         condition: service_healthy
     networks: [eatsnow]
+
+  orders:
+    build:
+      context: ./services
+      dockerfile: orders/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=orders
+      DB_USER: orders_svc
+      ORDERS_DB_PASSWORD: ${ORDERS_DB_PASSWORD:-orders_dev_pw}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: orders_mq
+      ORDERS_MQ_PASSWORD: ${ORDERS_MQ_PASSWORD:-orders_mq_dev_pw}
+      EATSNOW_PAYMENT_TOKEN_KEY: ${PAYMENT_TOKEN_KEY:-ZWF0c25vdy1kZXYtcGF5bWVudC10b2tlbi1rZXktMzI=} # DEV ONLY
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+      CATALOG_JWKS_URL: http://catalog:8080/api/v1/catalog/jwks.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  payments:
+    build:
+      context: ./services
+      dockerfile: payments/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=payments
+      DB_USER: payments_svc
+      PAYMENTS_DB_PASSWORD: ${PAYMENTS_DB_PASSWORD:-payments_dev_pw}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: payments_mq
+      PAYMENTS_MQ_PASSWORD: ${PAYMENTS_MQ_PASSWORD:-payments_mq_dev_pw}
+      EATSNOW_PAYMENT_TOKEN_KEY: ${PAYMENT_TOKEN_KEY:-ZWF0c25vdy1kZXYtcGF5bWVudC10b2tlbi1rZXktMzI=} # DEV ONLY
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  restaurants:
+    build:
+      context: ./services
+      dockerfile: restaurants/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=restaurants
+      DB_USER: restaurants_svc
+      RESTAURANTS_DB_PASSWORD: ${RESTAURANTS_DB_PASSWORD:-restaurants_dev_pw}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: restaurants_mq
+      RESTAURANTS_MQ_PASSWORD: ${RESTAURANTS_MQ_PASSWORD:-restaurants_mq_dev_pw}
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  delivery:
+    build:
+      context: ./services
+      dockerfile: delivery/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=deliveries
+      DB_USER: deliveries_svc
+      DELIVERIES_DB_PASSWORD: ${DELIVERIES_DB_PASSWORD:-deliveries_dev_pw}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: delivery_mq
+      DELIVERY_MQ_PASSWORD: ${DELIVERY_MQ_PASSWORD:-delivery_mq_dev_pw}
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [eatsnow]
+
+  notifications:
+    build:
+      context: ./services
+      dockerfile: notifications/Dockerfile
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=notifications
+      DB_USER: notifications_svc
+      NOTIFICATIONS_DB_PASSWORD: ${NOTIFICATIONS_DB_PASSWORD:-notifications_dev_pw}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: notifications_mq
+      NOTIFICATIONS_MQ_PASSWORD: ${NOTIFICATIONS_MQ_PASSWORD:-notifications_mq_dev_pw}
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      IDENTITY_URL: http://identity:8080
+      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY:-dev-internal-service-key} # DEV ONLY
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    networks: [eatsnow]
+
+  gateway:
+    build:
+      context: ./services
+      dockerfile: gateway/Dockerfile
+    environment:
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
+      IDENTITY_URL: http://identity:8080
+      CATALOG_URL: http://catalog:8080
+      ORDERS_URL: http://orders:8080
+      RESTAURANTS_URL: http://restaurants:8080
+      DELIVERY_URL: http://delivery:8080
+      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+    ports:
+      - "8090:8080" # public entry point; catalog (8080) and identity (8082) keep their direct ports for Postman
+    depends_on: [identity, catalog, orders, restaurants, delivery]
+    networks: [eatsnow]
