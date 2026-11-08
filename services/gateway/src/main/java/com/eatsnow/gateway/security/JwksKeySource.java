@@ -7,6 +7,9 @@ import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jwt.SignedJWT;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.java11.instrument.binder.jdk.MicrometerHttpClient;
+import io.micrometer.observation.ObservationRegistry;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,13 +29,20 @@ public class JwksKeySource {
     private static final Logger log = LoggerFactory.getLogger(JwksKeySource.class);
     private static final Duration MIN_REFRESH_INTERVAL = Duration.ofSeconds(5);
 
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(2);
+
     private final String url;
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(2)).build();
+    private final HttpClient http;
     private volatile JWKSet cache;
     private volatile Instant lastFetch = Instant.EPOCH;
 
-    public JwksKeySource(String url) {
+    /** Instrumented client: each key fetch is a client span that propagates traceparent to Identity (Spec 6.3). */
+    public JwksKeySource(String url, ObservationRegistry observations, MeterRegistry meters) {
         this.url = url;
+        this.http = MicrometerHttpClient.instrumentationBuilder(
+                        HttpClient.newBuilder().connectTimeout(CONNECT_TIMEOUT).build(), meters)
+                .observationRegistry(observations)
+                .build();
     }
 
     public boolean verifySignature(SignedJWT jwt) {

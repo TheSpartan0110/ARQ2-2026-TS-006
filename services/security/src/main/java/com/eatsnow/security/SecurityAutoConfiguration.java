@@ -1,6 +1,10 @@
 package com.eatsnow.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Metrics;
+import io.micrometer.observation.ObservationRegistry;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -17,8 +21,12 @@ import org.springframework.core.Ordered;
 public class SecurityAutoConfiguration {
 
     @Bean
-    public IdentityTokenVerifier identityTokenVerifier(@Value("${eatsnow.security.identity-jwks-url}") String jwksUrl) {
-        return new IdentityTokenVerifier(new JwksKeySource(jwksUrl));
+    public IdentityTokenVerifier identityTokenVerifier(@Value("${eatsnow.security.identity-jwks-url}") String jwksUrl,
+                                                       ObjectProvider<ObservationRegistry> observations,
+                                                       ObjectProvider<MeterRegistry> meters) {
+        return new IdentityTokenVerifier(new JwksKeySource(jwksUrl,
+                observations.getIfAvailable(() -> ObservationRegistry.NOOP),
+                meters.getIfAvailable(() -> Metrics.globalRegistry)));
     }
 
     @Bean

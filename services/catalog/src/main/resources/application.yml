@@ -13,6 +13,16 @@ management:
       enabled: true
     health:
       show-details: when_authorized
+  tracing:
+    sampling:
+      probability: 1.0 # Spec 6.3: 100% sampling in Wave 2
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACES_ENDPOINT:http://otel-collector:4318/v1/traces}
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true # buckets for the CatalogSlow p95 alert (Spec 6.4)
 
 spring:
   application:

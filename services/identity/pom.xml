@@ -81,6 +81,16 @@
              <artifactId>micrometer-registry-prometheus</artifactId>
          </dependency>
 
+         <!-- Distributed tracing: OTLP to the Collector, then Tempo (Spec 6.1 / 6.3) -->
+         <dependency>
+             <groupId>io.micrometer</groupId>
+             <artifactId>micrometer-tracing-bridge-otel</artifactId>
+         </dependency>
+         <dependency>
+             <groupId>io.opentelemetry</groupId>
+             <artifactId>opentelemetry-exporter-otlp</artifactId>
+         </dependency>
+
          <!-- JSON Logging for OTel Collector & Loki (Spec 6.2) -->
          <dependency>
              <groupId>net.logstash.logback</groupId>

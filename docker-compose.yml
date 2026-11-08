@@ -128,6 +128,8 @@ services:
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=7d
       - --web.enable-lifecycle
+      - --web.enable-remote-write-receiver   # Tempo metrics generator (service graph, span metrics)
+      - --enable-feature=exemplar-storage
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./infra/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
@@ -178,6 +180,7 @@ services:
     environment:
       <<: *service-telemetry-env
       OTEL_SERVICE_NAME: catalog
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
       DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=catalog
       DB_USER: catalog_svc
       CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:-catalog_dev_pw}
@@ -200,6 +203,7 @@ services:
     environment:
       <<: *service-telemetry-env
       OTEL_SERVICE_NAME: identity
+      OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
       DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=identity
       DB_USER: identity_svc
       IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:-identity_dev_pw}
