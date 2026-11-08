@@ -1,9 +1,11 @@
 FROM maven:3.9.6-eclipse-temurin-17-alpine AS builder
 WORKDIR /workspace
 
-# Install common library into local maven repo
+# Install shared libraries into the local maven repo
 COPY common ./common
 RUN mvn -f common/pom.xml clean install -DskipTests
+COPY security ./security
+RUN mvn -f security/pom.xml clean install -DskipTests
 
 # Build catalog service package
 COPY catalog ./catalog

@@ -10,12 +10,6 @@ export interface Profile {
   active: boolean
 }
 
-export interface AuthResponse {
-  accessToken: string
-  tokenType: string
-  expiresIn: number
-}
-
 export interface ErrorResponse {
   code: string
   message: string

@@ -69,7 +69,9 @@ spring:
 eatsnow:
   identity:
     url: ${IDENTITY_URL:http://identity:8080}
-    service-key: ${INTERNAL_SERVICE_KEY:dev-internal-service-key} # DEV ONLY
+    # Spec 3.7: client-credentials client registered in Identity
+    client-id: ${NOTIFICATIONS_CLIENT_ID:notifications}
+    client-secret: ${NOTIFICATIONS_CLIENT_SECRET:dev-notifications-secret} # DEV ONLY
   notifications:
     from: ${MAIL_FROM:no-reply@eatsnow.test}
     dispatch-interval-ms: 1000

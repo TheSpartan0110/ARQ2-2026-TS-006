@@ -1,14 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { User } from 'oidc-client-ts'
 import type { Profile } from '../types/auth'
 import { authApi, ApiError } from '../services/api/authApi'
+import { userManager } from '../auth/oidc'
 
 interface AuthContextType {
   token: string | null
   profile: Profile | null
   isLoading: boolean
   error: string | null
-  login: (email: string, pass: string) => Promise<void>
-  logout: () => void
+  /** Redirects to the Identity login page (authorization code + PKCE). */
+  login: () => Promise<void>
+  /** Finishes the login on /callback: exchanges the code for tokens. */
+  completeLogin: () => Promise<void>
+  logout: () => Promise<void>
   refreshProfile: () => Promise<void>
   updateDisplayName: (displayName: string) => Promise<void>
   clearError: () => void
@@ -16,72 +21,81 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const TOKEN_STORAGE_KEY = 'eatsnow_access_token'
+function describe(err: unknown, fallback: string): string {
+  if (err instanceof ApiError) return `${err.code}: ${err.message}`
+  if (err instanceof Error) return err.message
+  return fallback
+}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem(TOKEN_STORAGE_KEY))
+  const [token, setToken] = useState<string | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    async function initAuth() {
-      const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY)
-      if (storedToken) {
-        try {
-          const userProfile = await authApi.getProfile(storedToken)
-          setProfile(userProfile)
-          setToken(storedToken)
-        } catch {
-          // Token expired or invalid
-          localStorage.removeItem(TOKEN_STORAGE_KEY)
-          setToken(null)
-          setProfile(null)
-        }
-      }
-      setIsLoading(false)
+  const adoptUser = useCallback(async (user: User | null) => {
+    if (!user || user.expired) {
+      setToken(null)
+      setProfile(null)
+      return
     }
-
-    initAuth()
+    setToken(user.access_token)
+    setProfile(await authApi.getProfile(user.access_token))
   }, [])
 
-  const login = async (email: string, pass: string) => {
+  useEffect(() => {
+    async function initAuth() {
+      try {
+        await adoptUser(await userManager.getUser())
+      } catch {
+        await userManager.removeUser()
+        setToken(null)
+        setProfile(null)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    // The access token lasts 15 minutes. Renew through Identity: no password prompt while its session lives.
+    const onExpired = () => {
+      void userManager.signinRedirect({ state: window.location.pathname })
+    }
+    userManager.events.addAccessTokenExpired(onExpired)
+    void initAuth()
+    return () => userManager.events.removeAccessTokenExpired(onExpired)
+  }, [adoptUser])
+
+  const login = async () => {
+    setError(null)
+    await userManager.signinRedirect()
+  }
+
+  const completeLogin = useCallback(async () => {
     setIsLoading(true)
     setError(null)
     try {
-      const authResponse = await authApi.login(email, pass)
-      const accessToken = authResponse.accessToken
-      localStorage.setItem(TOKEN_STORAGE_KEY, accessToken)
-      setToken(accessToken)
-
-      const userProfile = await authApi.getProfile(accessToken)
-      setProfile(userProfile)
+      await adoptUser(await userManager.signinRedirectCallback())
     } catch (err: unknown) {
-      if (err instanceof ApiError) {
-        setError(`${err.code}: ${err.message}`)
-      } else if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError('Failed to authenticate. Please check server connection.')
-      }
+      setError(describe(err, 'The sign-in could not be completed.'))
       throw err
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [adoptUser])
 
-  const logout = () => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY)
+  const logout = async () => {
+    const user = await userManager.getUser()
     setToken(null)
     setProfile(null)
     setError(null)
+    // Ends the Identity session too (OIDC RP-initiated logout), then returns to the app.
+    await userManager.signoutRedirect({ id_token_hint: user?.id_token })
   }
 
   const refreshProfile = async () => {
     if (!token) return
     try {
-      const refreshed = await authApi.getProfile(token)
-      setProfile(refreshed)
+      setProfile(await authApi.getProfile(token))
     } catch (err: unknown) {
       if (err instanceof ApiError) {
         setError(`${err.code}: ${err.message}`)
@@ -95,14 +109,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true)
     setError(null)
     try {
-      const updated = await authApi.updateDisplayName(token, newDisplayName)
-      setProfile(updated)
+      setProfile(await authApi.updateDisplayName(token, newDisplayName))
     } catch (err: unknown) {
-      if (err instanceof ApiError) {
-        setError(`${err.code}: ${err.message}`)
-      } else {
-        setError('Failed to update display name.')
-      }
+      setError(err instanceof ApiError ? `${err.code}: ${err.message}` : 'Failed to update display name.')
       throw err
     } finally {
       setIsLoading(false)
@@ -119,6 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         error,
         login,
+        completeLogin,
         logout,
         refreshProfile,
         updateDisplayName,
@@ -137,4 +147,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context
 }
-

@@ -34,12 +34,23 @@ spring:
       httpclient:
         connect-timeout: 2000
         response-timeout: 10s
+      # The browser app (another origin) calls the API and the token endpoint directly (ADR 005).
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowed-origins: ${WEB_ORIGINS:http://localhost:5173}
+            allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+            allowed-headers: "*"
+            exposed-headers: [X-Correlation-ID, Location, Retry-After]
+            max-age: 3600
       routes:
-        # Public: login and the Identity public keys. Everything else requires a valid access token.
+        # Public: the OIDC provider (Spring Authorization Server) and its login, registration and activation
+        # pages, so the issuer and the login live behind the single entry point. Everything else needs a token.
         - id: identity-public
           uri: ${IDENTITY_URL:http://identity:8080}
           predicates:
-            - Path=/api/v1/auth/**,/.well-known/jwks.json,/oauth2/jwks
+            - Path=/oauth2/**,/.well-known/openid-configuration,/.well-known/oauth-authorization-server,/userinfo,/connect/**,/login,/logout,/register,/activate,/css/**
         - id: identity
           uri: ${IDENTITY_URL:http://identity:8080}
           predicates:
@@ -65,7 +76,9 @@ spring:
 
 eatsnow:
   jwks:
-    identity-url: ${IDENTITY_JWKS_URL:http://identity:8080/.well-known/jwks.json}
+    identity-url: ${IDENTITY_JWKS_URL:http://identity:8080/oauth2/jwks}
+  identity:
+    issuer: ${IDENTITY_ISSUER:http://localhost:8090} # Spec 3.1: tokens must carry this `iss`
 
 logging:
   level:

@@ -14,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.UUID;
@@ -99,6 +100,18 @@ public class GlobalExceptionHandler {
         );
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorDto);
+    }
+
+    /** Unknown paths are a client error (Spec 3.1: 404 NOT_FOUND), not an unexpected server fault. */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleNoResource(NoResourceFoundException ex) {
+        ErrorResponseDto errorDto = new ErrorResponseDto(
+                "NOT_FOUND",
+                "The requested resource does not exist",
+                CorrelationContext.getCurrentCorrelationId(),
+                null
+        );
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorDto);
     }
 
     @ExceptionHandler(Exception.class)

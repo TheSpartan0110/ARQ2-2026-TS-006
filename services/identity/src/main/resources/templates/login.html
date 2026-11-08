@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sign in · EatsNow</title>
+    <link rel="icon" href="data:,"> <!-- no favicon request to the Gateway -->
+    <link rel="stylesheet" th:href="@{/css/identity.css}">
+</head>
+<body>
+<main>
+    <p class="brand">EatsNow</p>
+    <h1>Sign in</h1>
+
+    <p class="message error" th:if="${param.error}">Invalid email or password, or the account is not active.</p>
+    <p class="message info" th:if="${param.logout}">You have signed out.</p>
+    <p class="message info" th:if="${param.registered}">Your account was created. Sign in to continue.</p>
+    <p class="message info" th:if="${param.activated}">Your account is active. Sign in with your new password.</p>
+
+    <form method="post" th:action="@{/login}">
+        <label>Email
+            <input type="email" name="username" autocomplete="username" required autofocus>
+        </label>
+        <label>Password
+            <input type="password" name="password" autocomplete="current-password" required>
+        </label>
+        <button type="submit">Sign in</button>
+    </form>
+
+    <p class="alt">New customer? <a th:href="@{/register}">Create an account</a></p>
+</main>
+</body>
+</html>

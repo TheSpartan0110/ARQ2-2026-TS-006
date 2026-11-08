@@ -32,10 +32,12 @@ $PastaId  = "00000000-0000-4000-8000-000000000051"
 
 function Step($text) { Write-Host ""; Write-Host "== $text" -ForegroundColor Cyan }
 
+. "$PSScriptRoot/oidc-login.ps1"
+
+# OIDC authorization code + PKCE on the Identity login page (ADR 005)
 function Login($email) {
-    $r = Invoke-RestMethod -Method Post -Uri "$Gateway/api/v1/auth/token" -ContentType "application/json" `
-        -Body (@{ email = $email; password = $Password } | ConvertTo-Json)
-    return @{ Authorization = "Bearer $($r.accessToken)" }
+    $r = Get-EatsNowToken -Gateway $Gateway -Email $email -Password $Password
+    return @{ Authorization = "Bearer $($r.access_token)" }
 }
 
 function Api($method, $path, $auth, $body = $null, [switch]$Idempotent) {

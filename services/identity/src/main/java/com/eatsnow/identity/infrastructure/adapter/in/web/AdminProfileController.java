@@ -9,7 +9,6 @@ import com.eatsnow.identity.domain.port.in.AdminProfileUseCase;
 import com.eatsnow.identity.infrastructure.adapter.in.web.dto.CreateProfileRequestDto;
 import com.eatsnow.identity.infrastructure.adapter.in.web.dto.ProfileResponseDto;
 import com.eatsnow.identity.infrastructure.adapter.in.web.dto.UpdateProfileStatusRequestDto;
-import com.eatsnow.identity.infrastructure.config.security.AuthenticatedUser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
@@ -103,10 +102,8 @@ public class AdminProfileController {
         if (authentication == null) {
             throw new InvalidRequestException("Missing authenticated principal");
         }
-        if (authentication.getPrincipal() instanceof AuthenticatedUser user) {
-            return user.id();
-        }
-        try {
+        try {                                   // access tokens carry the profile id as `sub`
+
             return UUID.fromString(authentication.getName());
         } catch (IllegalArgumentException ex) {
             throw new InvalidRequestException("Cannot parse admin subject UUID: " + authentication.getName());

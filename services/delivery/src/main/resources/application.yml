@@ -70,7 +70,8 @@ eatsnow:
   delivery:
     assignment-interval-ms: 10000 # unassigned deliveries are retried every 10 s (Spec 3.6)
   security:
-    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/.well-known/jwks.json}
+    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/oauth2/jwks}
+    issuer: ${IDENTITY_ISSUER:http://localhost:8090} # Spec 3.1: public issuer (the Gateway)
     required-role: DRIVER
 
 logging:

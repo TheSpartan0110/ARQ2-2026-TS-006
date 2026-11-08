@@ -1,5 +1,6 @@
 package com.eatsnow.catalog.infrastructure.adapter.in.web;
 
+import com.eatsnow.common.domain.exception.ForbiddenException;
 import com.eatsnow.common.domain.exception.InvalidRequestException;
 import com.eatsnow.catalog.domain.model.MenuItem;
 import com.eatsnow.common.domain.model.PageResult;
@@ -16,8 +17,10 @@ import com.eatsnow.common.web.dto.PaginatedResponseDto;
 import com.eatsnow.catalog.infrastructure.adapter.in.web.dto.QuoteResponseDto;
 import com.eatsnow.catalog.infrastructure.adapter.in.web.dto.RequestedItemRequestDto;
 import com.eatsnow.catalog.infrastructure.adapter.in.web.dto.RestaurantResponseDto;
+import com.eatsnow.security.AuthenticatedUser;
+import com.eatsnow.security.BearerAuthenticationFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -83,10 +86,15 @@ public class CatalogController {
     @PostMapping("/quotes")
     public ResponseEntity<QuoteResponseDto> createQuote(
             @RequestHeader("Idempotency-Key") String idempotencyKeyHeader,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestHeader(value = "X-Customer-ID", required = false) String customerIdHeader,
-            @Valid @RequestBody CreateQuoteRequestDto request
+            @Valid @RequestBody CreateQuoteRequestDto request,
+            HttpServletRequest httpRequest
     ) {
+        // Spec 3.3: only customers request quotes, and the quote is bound to the verified token subject.
+        AuthenticatedUser caller = BearerAuthenticationFilter.currentUser(httpRequest);
+        if (!caller.roles().contains("USER")) {
+            throw new ForbiddenException("Only customers (USER role) can request quotes");
+        }
+
         // Validate Idempotency-Key UUID format (Spec 3.1)
         try {
             UUID.fromString(idempotencyKeyHeader.trim());
@@ -94,7 +102,7 @@ public class CatalogController {
             throw new InvalidRequestException("Idempotency-Key must be a valid UUID");
         }
 
-        UUID customerId = resolveCustomerId(authHeader, customerIdHeader);
+        UUID customerId = caller.userId();
 
         List<RequestedItem> items = request.items().stream()
                 .map(RequestedItemRequestDto::toDomain)
@@ -121,27 +129,5 @@ public class CatalogController {
     @GetMapping(value = "/catalog/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getJwks() {
         return ResponseEntity.ok(quoteSignerPort.getPublicKeyJwksJson());
-    }
-
-    private UUID resolveCustomerId(String authHeader, String customerIdHeader) {
-        if (customerIdHeader != null && !customerIdHeader.isBlank()) {
-            try {
-                return UUID.fromString(customerIdHeader.trim());
-            } catch (IllegalArgumentException ignored) {}
-        }
-
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7).trim();
-            try {
-                SignedJWT jwt = SignedJWT.parse(token);
-                String subject = jwt.getJWTClaimsSet().getSubject();
-                if (subject != null) {
-                    return UUID.fromString(subject);
-                }
-            } catch (Exception ignored) {}
-        }
-
-        // Default test customer from spec example if no token provided during early wave testing
-        return UUID.fromString("00000000-0000-4000-8000-000000000001");
     }
 }

@@ -2,23 +2,13 @@
   "info": {
     "_postman_id": "e0a11a8b-4b2a-4db3-96b0-75b28d9a2631",
     "name": "EatsNow - Identity Service",
-    "description": "Postman Collection for EatsNow Identity & Access Service (Spec 3.1 & 3.2, ADR 005). Supports authentication, profile queries, admin user provisioning, role linking, and JWKS validation.",
+    "description": "Postman Collection for EatsNow Identity & Access Service (Spec 3.1 & 3.2, ADR 005), through the API Gateway. Identity is an OIDC provider (Spring Authorization Server): folders authenticate with OAuth 2.0 authorization code + PKCE (client eatsnow-cli). Click 'Get New Access Token' on a folder and log in on the Identity page with the account named in the token name.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8082",
-      "type": "string"
-    },
-    {
-      "key": "userToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "adminToken",
-      "value": "",
+      "value": "http://localhost:8090",
       "type": "string"
     }
   ],
@@ -27,89 +17,7 @@
       "name": "Authentication & OIDC",
       "item": [
         {
-          "name": "1. Login User (Get User JWT)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var json = pm.response.json();",
-                  "    pm.collectionVariables.set('userToken', json.accessToken);",
-                  "    console.log('Saved userToken to collection variables');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Correlation-ID",
-                "value": "{{$guid}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"alex@example.test\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "token"]
-            },
-            "description": "Authenticates Alex (USER role) and issues an RS256 JWT access token valid for 15 minutes."
-          }
-        },
-        {
-          "name": "2. Login Admin (Get Admin JWT)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var json = pm.response.json();",
-                  "    pm.collectionVariables.set('adminToken', json.accessToken);",
-                  "    console.log('Saved adminToken to collection variables');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Correlation-ID",
-                "value": "{{$guid}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@eatsnow.test\",\n  \"password\": \"password123\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/token",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "token"]
-            },
-            "description": "Authenticates Admin Operator (ADMIN role) and stores the adminToken for administrative requests."
-          }
-        },
-        {
-          "name": "3. Get Public JWKS",
+          "name": "1. OIDC Discovery Document",
           "request": {
             "method": "GET",
             "header": [
@@ -119,14 +27,43 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/.well-known/jwks.json",
-              "host": ["{{baseUrl}}"],
-              "path": [".well-known", "jwks.json"]
+              "raw": "{{baseUrl}}/.well-known/openid-configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "openid-configuration"
+              ]
             },
-            "description": "Returns the published JSON Web Key Set (JWKS) with RS256 public keys for offline Gateway token validation."
+            "description": "Issuer, authorization, token, JWKS, userinfo and logout endpoints of the Identity OIDC provider."
+          }
+        },
+        {
+          "name": "2. Get Public JWKS",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Correlation-ID",
+                "value": "{{$guid}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/oauth2/jwks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth2",
+                "jwks"
+              ]
+            },
+            "description": "RS256 public keys used by the Gateway and every service to validate access tokens locally."
           }
         }
-      ]
+      ],
+      "description": "Public OIDC endpoints. Login is not an API call: it is the authorization-code flow with PKCE, configured on the folders below (Authorization tab, 'Get New Access Token')."
     },
     {
       "name": "Self-Service Profiles (/profiles/me)",
@@ -137,18 +74,21 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{userToken}}"
-              },
-              {
                 "key": "X-Correlation-ID",
                 "value": "{{$guid}}"
               }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/profiles/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "profiles", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "me"
+              ]
             },
             "description": "Returns the authenticated user's own profile."
           }
@@ -158,10 +98,6 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{userToken}}"
-              },
               {
                 "key": "Idempotency-Key",
                 "value": "{{$guid}}"
@@ -181,13 +117,85 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/profiles/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "profiles", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "profiles",
+                "me"
+              ]
             },
             "description": "Allows authenticated user to update their displayName only. Requires Idempotency-Key: UUID."
           }
         }
-      ]
+      ],
+      "auth": {
+        "type": "oauth2",
+        "oauth2": [
+          {
+            "key": "grant_type",
+            "value": "authorization_code_with_pkce",
+            "type": "string"
+          },
+          {
+            "key": "authUrl",
+            "value": "{{baseUrl}}/oauth2/authorize",
+            "type": "string"
+          },
+          {
+            "key": "accessTokenUrl",
+            "value": "{{baseUrl}}/oauth2/token",
+            "type": "string"
+          },
+          {
+            "key": "clientId",
+            "value": "eatsnow-cli",
+            "type": "string"
+          },
+          {
+            "key": "clientSecret",
+            "value": "dev-cli-secret",
+            "type": "string"
+          },
+          {
+            "key": "scope",
+            "value": "openid",
+            "type": "string"
+          },
+          {
+            "key": "redirect_uri",
+            "value": "https://oauth.pstmn.io/v1/callback",
+            "type": "string"
+          },
+          {
+            "key": "challengeAlgorithm",
+            "value": "S256",
+            "type": "string"
+          },
+          {
+            "key": "client_authentication",
+            "value": "header",
+            "type": "string"
+          },
+          {
+            "key": "tokenName",
+            "value": "EatsNow customer (log in as alex@example.test / password123)",
+            "type": "string"
+          },
+          {
+            "key": "addTokenTo",
+            "value": "header",
+            "type": "string"
+          },
+          {
+            "key": "useBrowser",
+            "value": false,
+            "type": "boolean"
+          }
+        ]
+      }
     },
     {
       "name": "Admin Management (/admin/profiles)",
@@ -198,18 +206,21 @@
             "method": "GET",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              },
-              {
                 "key": "X-Correlation-ID",
                 "value": "{{$guid}}"
               }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/profiles?limit=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "profiles"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "profiles"
+              ],
               "query": [
                 {
                   "key": "limit",
@@ -236,10 +247,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              },
-              {
                 "key": "Idempotency-Key",
                 "value": "{{$guid}}"
               },
@@ -258,8 +265,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/profiles",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "profiles"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "profiles"
+              ]
             },
             "description": "Creates a DRIVER profile. Automatically generates driverId claim (Spec 3.2)."
           }
@@ -269,10 +283,6 @@
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              },
               {
                 "key": "Idempotency-Key",
                 "value": "{{$guid}}"
@@ -292,8 +302,15 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/profiles",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "profiles"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "profiles"
+              ]
             },
             "description": "Creates a RESTAURANT profile. Requires restaurantId from Catalog."
           }
@@ -303,10 +320,6 @@
           "request": {
             "method": "PATCH",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              },
               {
                 "key": "Idempotency-Key",
                 "value": "{{$guid}}"
@@ -326,13 +339,86 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/admin/profiles/00000000-0000-4000-8000-000000000001",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "profiles", "00000000-0000-4000-8000-000000000001"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "profiles",
+                "00000000-0000-4000-8000-000000000001"
+              ]
             },
             "description": "Deactivates a profile. Admin cannot deactivate their own profile (409 INVALID_TRANSITION)."
           }
         }
-      ]
+      ],
+      "auth": {
+        "type": "oauth2",
+        "oauth2": [
+          {
+            "key": "grant_type",
+            "value": "authorization_code_with_pkce",
+            "type": "string"
+          },
+          {
+            "key": "authUrl",
+            "value": "{{baseUrl}}/oauth2/authorize",
+            "type": "string"
+          },
+          {
+            "key": "accessTokenUrl",
+            "value": "{{baseUrl}}/oauth2/token",
+            "type": "string"
+          },
+          {
+            "key": "clientId",
+            "value": "eatsnow-cli",
+            "type": "string"
+          },
+          {
+            "key": "clientSecret",
+            "value": "dev-cli-secret",
+            "type": "string"
+          },
+          {
+            "key": "scope",
+            "value": "openid",
+            "type": "string"
+          },
+          {
+            "key": "redirect_uri",
+            "value": "https://oauth.pstmn.io/v1/callback",
+            "type": "string"
+          },
+          {
+            "key": "challengeAlgorithm",
+            "value": "S256",
+            "type": "string"
+          },
+          {
+            "key": "client_authentication",
+            "value": "header",
+            "type": "string"
+          },
+          {
+            "key": "tokenName",
+            "value": "EatsNow admin (log in as admin@eatsnow.test / password123)",
+            "type": "string"
+          },
+          {
+            "key": "addTokenTo",
+            "value": "header",
+            "type": "string"
+          },
+          {
+            "key": "useBrowser",
+            "value": false,
+            "type": "boolean"
+          }
+        ]
+      }
     },
     {
       "name": "Actuator & Observability (Management Port)",
@@ -344,9 +430,14 @@
             "url": {
               "raw": "http://localhost:8083/actuator/prometheus",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "8083",
-              "path": ["actuator", "prometheus"]
+              "path": [
+                "actuator",
+                "prometheus"
+              ]
             },
             "description": "Prometheus metric scrape endpoint on management port 8083 (8081 inside container)."
           }
@@ -358,14 +449,22 @@
             "url": {
               "raw": "http://localhost:8083/actuator/health",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "8083",
-              "path": ["actuator", "health"]
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "Service health check on management port."
           }
         }
-      ]
+      ],
+      "auth": {
+        "type": "noauth"
+      }
     }
   ]
 }

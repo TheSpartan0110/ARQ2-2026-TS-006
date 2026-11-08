@@ -9,14 +9,16 @@ import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.common.domain.model.Role;
 import com.eatsnow.common.domain.port.out.IdempotencyStoragePort;
 import com.eatsnow.identity.domain.model.Profile;
+import com.eatsnow.identity.domain.port.out.ActivationNotifierPort;
+import com.eatsnow.identity.domain.port.out.ActivationTokenRepositoryPort;
 import com.eatsnow.identity.domain.port.out.ProfileRepositoryPort;
+import com.eatsnow.identity.domain.port.out.TokenRevocationPort;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.Instant;
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -38,7 +42,13 @@ class AdminProfileServiceTest {
     private IdempotencyStoragePort idempotencyStorage;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private ActivationTokenRepositoryPort activationTokens;
+
+    @Mock
+    private ActivationNotifierPort activationNotifier;
+
+    @Mock
+    private TokenRevocationPort tokenRevocation;
 
     private AdminProfileService adminProfileService;
 
@@ -47,7 +57,8 @@ class AdminProfileServiceTest {
 
     @BeforeEach
     void setUp() {
-        adminProfileService = new AdminProfileService(profileRepository, idempotencyStorage, passwordEncoder);
+        adminProfileService = new AdminProfileService(profileRepository, idempotencyStorage, activationTokens,
+                activationNotifier, tokenRevocation);
     }
 
     @Test
@@ -66,7 +77,6 @@ class AdminProfileServiceTest {
     @DisplayName("Should create DRIVER profile and auto-generate driverId (Spec 3.2)")
     void testCreateProfile_Driver_GeneratesDriverId() {
         when(profileRepository.existsByEmail("sam@example.test")).thenReturn(false);
-        when(passwordEncoder.encode(any())).thenReturn("hashedPw");
         when(profileRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Profile profile = adminProfileService.createProfile(
@@ -86,6 +96,10 @@ class AdminProfileServiceTest {
         assertNotNull(profile.driverId(), "driverId must be automatically generated");
         assertNull(profile.restaurantId());
         assertTrue(profile.active());
+        assertNull(profile.passwordHash(), "no password until the person activates the account");
+        assertFalse(profile.canLogIn());
+        verify(activationTokens).save(argThat(hash -> hash.length() == 64), eq(profile.id()), any());
+        verify(activationNotifier).sendActivationLink(eq(profile), argThat(token -> token.length() >= 43));
     }
 
     @Test
@@ -93,7 +107,6 @@ class AdminProfileServiceTest {
     void testCreateProfile_Restaurant_Success() {
         UUID restaurantId = UUID.randomUUID();
         when(profileRepository.existsByEmail("burger@example.test")).thenReturn(false);
-        when(passwordEncoder.encode(any())).thenReturn("hashedPw");
         when(profileRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         Profile profile = adminProfileService.createProfile(
@@ -191,6 +204,7 @@ class AdminProfileServiceTest {
         Profile updated = adminProfileService.updateProfileStatus(adminId, targetProfileId, false, null, null);
 
         assertFalse(updated.active());
+        verify(tokenRevocation).revokeAll("alex@example.test");
     }
 
     @Test
@@ -213,6 +227,7 @@ class AdminProfileServiceTest {
         Profile updated = adminProfileService.updateProfileStatus(adminId, adminId, true, null, null);
 
         assertTrue(updated.active());
+        verifyNoInteractions(tokenRevocation);
     }
 
     @Test
@@ -234,7 +249,6 @@ class AdminProfileServiceTest {
     @DisplayName("Should normalize email to lowercase when creating profile")
     void testCreateProfile_EmailNormalized() {
         when(profileRepository.existsByEmail("alex@example.test")).thenReturn(false);
-        when(passwordEncoder.encode(any())).thenReturn("hashed");
         when(profileRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
 
         Profile created = adminProfileService.createProfile(
