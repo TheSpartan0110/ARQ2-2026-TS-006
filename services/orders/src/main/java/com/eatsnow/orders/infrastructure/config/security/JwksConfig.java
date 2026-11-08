@@ -1,6 +1,8 @@
 package com.eatsnow.orders.infrastructure.config.security;
 
 import com.eatsnow.security.JwksKeySource;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +12,8 @@ import org.springframework.context.annotation.Configuration;
 public class JwksConfig {
 
     @Bean("catalogJwks")
-    public JwksKeySource catalogJwks(@Value("${eatsnow.jwks.catalog-url}") String url) {
-        return new JwksKeySource(url);
+    public JwksKeySource catalogJwks(@Value("${eatsnow.jwks.catalog-url}") String url,
+                                     ObservationRegistry observations, MeterRegistry meters) {
+        return new JwksKeySource(url, observations, meters);
     }
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.ObservationRegistry;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Map;
@@ -38,8 +40,9 @@ public class JwtValidationFilter implements GlobalFilter, Ordered {
     private final JwksKeySource identityKeys;
     private final ObjectMapper mapper;
 
-    public JwtValidationFilter(@Value("${eatsnow.jwks.identity-url}") String jwksUrl, ObjectMapper mapper) {
-        this.identityKeys = new JwksKeySource(jwksUrl);
+    public JwtValidationFilter(@Value("${eatsnow.jwks.identity-url}") String jwksUrl, ObjectMapper mapper,
+                               ObservationRegistry observations, MeterRegistry meters) {
+        this.identityKeys = new JwksKeySource(jwksUrl, observations, meters);
         this.mapper = mapper;
     }
 
