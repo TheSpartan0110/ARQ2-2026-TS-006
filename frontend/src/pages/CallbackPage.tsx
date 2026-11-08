@@ -14,7 +14,7 @@ export const CallbackPage: React.FC = () => {
     if (started.current) return
     started.current = true
     completeLogin()
-      .then(() => navigate('/profile', { replace: true }))
+      .then(() => navigate('/', { replace: true }))                  // each role lands on its own home
       .catch(() => undefined)
   }, [completeLogin, navigate])
 

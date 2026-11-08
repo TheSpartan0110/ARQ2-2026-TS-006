@@ -1,10 +1,13 @@
 package com.eatsnow.orders.application.service;
 
 import com.eatsnow.common.domain.exception.EntityNotFoundException;
+import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.orders.domain.model.Order;
+import com.eatsnow.orders.domain.model.OrderHistoryEntry;
 import com.eatsnow.orders.domain.model.PaymentSummary;
 import com.eatsnow.orders.domain.port.in.GetOrderQuery;
 import com.eatsnow.orders.domain.port.out.OrderRepositoryPort;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,5 +34,18 @@ public class OrderQueryService implements GetOrderQuery {
     public PaymentSummary getPayment(UUID customerId, UUID orderId) {
         Order order = getOrder(customerId, orderId);
         return new PaymentSummary(order.id(), order.paymentStatus(), order.total(), order.updatedAt());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public PageResult<Order> listOrders(UUID customerId, int limit, String cursor) {
+        return orders.findByCustomer(customerId, Math.max(1, Math.min(limit, 100)), cursor);   // Spec 3.1
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<OrderHistoryEntry> getHistory(UUID customerId, UUID orderId) {
+        getOrder(customerId, orderId);                    // same ownership rule: foreign orders are 404
+        return orders.findHistory(orderId);
     }
 }
