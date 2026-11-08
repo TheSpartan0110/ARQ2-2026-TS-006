@@ -6,6 +6,9 @@ import com.eatsnow.notifications.domain.model.CustomerContact;
 import com.eatsnow.notifications.domain.port.out.ContactLookupPort;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.java11.instrument.binder.jdk.MicrometerHttpClient;
+import io.micrometer.observation.ObservationRegistry;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -30,19 +33,27 @@ public class RestContactLookupAdapter implements ContactLookupPort {
     private final String identityUrl;
     private final String serviceKey;
     private final ObjectMapper mapper;
-    private final HttpClient http = HttpClient.newBuilder().connectTimeout(TIMEOUT).build();
+    private final HttpClient http;
 
     public RestContactLookupAdapter(@Value("${eatsnow.identity.url}") String identityUrl,
-                                    @Value("${eatsnow.identity.service-key}") String serviceKey, ObjectMapper mapper) {
+                                    @Value("${eatsnow.identity.service-key}") String serviceKey, ObjectMapper mapper,
+                                    ObservationRegistry observations, MeterRegistry meters) {
         this.identityUrl = identityUrl;
         this.serviceKey = serviceKey;
         this.mapper = mapper;
+        // Instrumented client: the lookup is a client span that propagates traceparent to Identity (Spec 6.3).
+        this.http = MicrometerHttpClient.instrumentationBuilder(
+                        HttpClient.newBuilder().connectTimeout(TIMEOUT).build(), meters)
+                .observationRegistry(observations)
+                .build();
     }
 
     @Override
     public CustomerContact find(UUID profileId) {
         HttpRequest request = HttpRequest.newBuilder(URI.create(identityUrl + "/internal/v1/profiles/" + profileId + "/contact"))
-                .timeout(TIMEOUT).header("X-Service-Key", serviceKey).GET().build();
+                .timeout(TIMEOUT).header("X-Service-Key", serviceKey)
+                .header(MicrometerHttpClient.URI_PATTERN_HEADER, "/internal/v1/profiles/{profileId}/contact")
+                .GET().build();
         try {
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 404) {
