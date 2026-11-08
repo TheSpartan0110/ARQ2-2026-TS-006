@@ -27,12 +27,12 @@ param(
     [switch]$Replay
 )
 $ErrorActionPreference = "Stop"
+. "$PSScriptRoot/oidc-login.ps1"
 
-# 1. Login through the gateway (public route)
-$login = Invoke-RestMethod -Method Post -Uri "$Gateway/api/v1/auth/token" -ContentType "application/json" `
-    -Body (@{ email = $Email; password = $Password } | ConvertTo-Json)
-$auth = @{ Authorization = "Bearer $($login.accessToken)" }
-Write-Host "Logged in as $Email (token expires in $($login.expiresIn) s)"
+# 1. Login: OIDC authorization code + PKCE on the Identity login page, through the gateway
+$login = Get-EatsNowToken -Gateway $Gateway -Email $Email -Password $Password
+$auth = @{ Authorization = "Bearer $($login.access_token)" }
+Write-Host "Logged in as $Email (token expires in $($login.expires_in) s)"
 
 # 2. Quote: signed by Catalog, valid for 120 s (seed data: Burger House / Classic Burger)
 $quoteBody = @{

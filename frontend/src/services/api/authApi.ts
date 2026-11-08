@@ -1,4 +1,4 @@
-import type { AuthResponse, Profile, ErrorResponse } from '../../types/auth'
+import type { Profile, ErrorResponse } from '../../types/auth'
 
 export class ApiError extends Error {
   code: string
@@ -43,16 +43,6 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 export const authApi = {
   /**
-   * Authenticates user credentials against Identity service and returns JWT access token.
-   */
-  async login(email: string, password: string): Promise<AuthResponse> {
-    return request<AuthResponse>('/api/v1/auth/token', {
-      method: 'POST',
-      body: JSON.stringify({ email, password }),
-    })
-  },
-
-  /**
    * Retrieves authenticated user's own profile (Spec 3.2).
    */
   async getProfile(token: string): Promise<Profile> {
@@ -81,10 +71,10 @@ export const authApi = {
   },
 
   /**
-   * Retrieves public JWKS JSON containing RS256 public key (ADR 005).
+   * Retrieves the public JWKS of the Identity OIDC provider (ADR 005).
    */
   async getJwks(): Promise<Record<string, unknown>> {
-    return request<Record<string, unknown>>('/.well-known/jwks.json', {
+    return request<Record<string, unknown>>('/oauth2/jwks', {
       method: 'GET',
     })
   },

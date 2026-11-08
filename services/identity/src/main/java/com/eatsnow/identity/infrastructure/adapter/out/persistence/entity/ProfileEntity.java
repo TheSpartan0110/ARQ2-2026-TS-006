@@ -31,7 +31,7 @@ public class ProfileEntity {
     @Column(name = "driver_id")
     private UUID driverId;
 
-    @Column(name = "password_hash", nullable = false, length = 255)
+    @Column(name = "password_hash", length = 255) // null until an ADMIN-created account is activated
     private String passwordHash;
 
     @Column(name = "active", nullable = false)

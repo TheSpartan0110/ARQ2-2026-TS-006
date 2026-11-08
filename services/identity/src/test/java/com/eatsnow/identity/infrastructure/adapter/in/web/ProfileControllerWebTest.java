@@ -7,16 +7,13 @@ import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.common.domain.model.Role;
 import com.eatsnow.common.web.GlobalExceptionHandler;
 import com.eatsnow.common.web.filter.CorrelationIdFilter;
-import com.eatsnow.identity.domain.model.IssuedToken;
 import com.eatsnow.identity.domain.model.Profile;
 import com.eatsnow.identity.domain.port.in.AdminProfileUseCase;
-import com.eatsnow.identity.domain.port.in.AuthenticateUseCase;
 import com.eatsnow.identity.domain.port.in.GetProfileUseCase;
 import com.eatsnow.identity.domain.port.in.UpdateMyProfileUseCase;
-import com.eatsnow.identity.domain.port.out.TokenIssuerPort;
-import com.eatsnow.identity.infrastructure.adapter.out.crypto.RsaTokenIssuer;
-import com.eatsnow.identity.infrastructure.config.security.JwtAuthenticationFilter;
 import com.eatsnow.identity.infrastructure.config.security.SecurityConfig;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +22,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
@@ -44,8 +42,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(controllers = {ProfileController.class, AdminProfileController.class, AuthController.class})
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class, GlobalExceptionHandler.class, CorrelationIdFilter.class})
+@WebMvcTest(controllers = {ProfileController.class, AdminProfileController.class})
+@Import({SecurityConfig.class, GlobalExceptionHandler.class, CorrelationIdFilter.class})
+@TestPropertySource(properties = {
+        "eatsnow.identity.issuer=http://localhost:8090",
+        "eatsnow.identity.clients.web.post-logout-redirect-uri=http://localhost:5173/"
+})
 class ProfileControllerWebTest {
 
     @Autowired
@@ -61,10 +63,7 @@ class ProfileControllerWebTest {
     private AdminProfileUseCase adminProfileUseCase;
 
     @MockBean
-    private AuthenticateUseCase authenticateUseCase;
-
-    @MockBean
-    private RsaTokenIssuer rsaTokenIssuer;
+    private JWKSource<SecurityContext> jwkSource;
 
     private final UUID userId = UUID.fromString("00000000-0000-4000-8000-000000000001");
     private final UUID adminId = UUID.fromString("00000000-0000-4000-8000-000000000099");
@@ -218,41 +217,6 @@ class ProfileControllerWebTest {
                         .content("{\"active\":false}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("INVALID_TRANSITION"));
-    }
-
-    @Test
-    @DisplayName("POST /api/v1/auth/token - Returns 200 with access token")
-    void testCreateToken_Success() throws Exception {
-        IssuedToken token = new IssuedToken("header.payload.signature", "Bearer", 900, userId, Set.of(Role.USER), null, null);
-        when(authenticateUseCase.authenticate("alex@example.test", "secret123")).thenReturn(token);
-
-        mockMvc.perform(post("/api/v1/auth/token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"alex@example.test\",\"password\":\"secret123\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.accessToken").value("header.payload.signature"))
-                .andExpect(jsonPath("$.tokenType").value("Bearer"))
-                .andExpect(jsonPath("$.expiresIn").value(900));
-    }
-
-    @Test
-    @DisplayName("GET /.well-known/jwks.json - Returns 200 with JWKS JSON")
-    void testGetJwks_Success() throws Exception {
-        when(rsaTokenIssuer.getPublicJwksJson()).thenReturn("{\"keys\":[{\"kty\":\"RSA\"}]}");
-
-        mockMvc.perform(get("/.well-known/jwks.json"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.keys[0].kty").value("RSA"));
-    }
-
-    @Test
-    @DisplayName("POST /api/v1/auth/token - Returns 400 when email or password is blank")
-    void testCreateToken_BlankCredentials_Returns400() throws Exception {
-        mockMvc.perform(post("/api/v1/auth/token")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"\",\"password\":\"\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
     }
 
     @Test

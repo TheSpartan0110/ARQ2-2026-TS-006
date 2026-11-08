@@ -38,11 +38,27 @@
          </dependency>
          <dependency>
              <groupId>org.springframework.boot</groupId>
-             <artifactId>spring-boot-starter-security</artifactId>
+             <artifactId>spring-boot-starter-validation</artifactId>
+         </dependency>
+
+         <!-- OIDC provider (ADR 005): Spring Authorization Server, its own API as a resource server, login pages -->
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-oauth2-authorization-server</artifactId>
          </dependency>
          <dependency>
              <groupId>org.springframework.boot</groupId>
-             <artifactId>spring-boot-starter-validation</artifactId>
+             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+         </dependency>
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-thymeleaf</artifactId>
+         </dependency>
+
+         <!-- Account activation emails (Spec 3.2) -->
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+             <artifactId>spring-boot-starter-mail</artifactId>
          </dependency>
 
          <!-- Persistence & PostgreSQL -->
@@ -62,13 +78,6 @@
          <dependency>
              <groupId>org.flywaydb</groupId>
              <artifactId>flyway-database-postgresql</artifactId>
-         </dependency>
-
-         <!-- JWT / OIDC / Crypto -->
-         <dependency>
-             <groupId>com.nimbusds</groupId>
-             <artifactId>nimbus-jose-jwt</artifactId>
-             <version>${nimbus-jose-jwt.version}</version>
          </dependency>
 
          <!-- Actuator & Prometheus Metrics (Spec 6.1 / 6.4) -->

@@ -1,6 +1,6 @@
 # EatsNow Contract Specification
 
-Status: Complete draft -  | Version: 1.1.0 | Team: TS-006
+Status: Complete draft | Version: 1.2.0 | Team: TS-006
 
 ## Purpose
 
@@ -115,7 +115,10 @@ Only initial creation is HTTP-driven. All subsequent global order transitions re
 
 - Base path: `/api/v1`; public traffic uses HTTPS. JSON request and response bodies use `application/json`.
 - Authentication: `Authorization: Bearer <access-token>`. Gateway and services verify signature, issuer, audience and expiry. Roles do not bypass ownership checks. Service-to-service calls use service credentials, not client-supplied identity headers.
-- Login uses the identity provider's standard OIDC authorization-code flow with PKCE and discovery; credentials are not accepted by a custom EatsNow login endpoint. Customers self-register through the Identity login pages and receive only the USER role.
+- Login uses the identity provider's standard OIDC authorization-code flow with PKCE (S256) and discovery; credentials are not accepted by a custom EatsNow login endpoint. Customers self-register through the Identity pages (`/register`) and receive only the USER role.
+- Identity & Access embeds Spring Authorization Server (ADR 005). Its issuer is the public Gateway URL (`http://localhost:8090` in Wave 2), so every token carries that `iss` whichever host issued it. The Gateway routes these Identity paths without a bearer token: discovery `/.well-known/openid-configuration`, `/oauth2/authorize`, `/oauth2/token`, `/oauth2/jwks`, `/oauth2/revoke`, `/userinfo`, `/connect/logout`, and the pages `/login`, `/register` and `/activate`. Services fetch the signing keys internally from `/oauth2/jwks`.
+- Registered clients: `eatsnow-web` (browser app; public client, PKCE, authorization code; Spring Authorization Server issues no refresh token to public clients, so the app renews by redirecting while the Identity login session is alive), `eatsnow-cli` (scripts, Postman and load tests; confidential client, PKCE, authorization code and refresh tokens that rotate on every use and expire after 8 hours) and `notifications` (client credentials, scope `internal.profiles.read`, Section 3.7).
+- Access tokens are RS256 JWTs valid for 15 minutes with `iss`, `sub` (the profile ID), `aud`, `exp`, `roles`, and `restaurantId` or `driverId` when linked. People's tokens have audience `eatsnow-api`, the only one the Gateway and the business services accept; client-credentials tokens have audience `eatsnow-internal` and are accepted only by internal endpoints. Inactive profiles receive no new tokens, refreshes included.
 - `X-Correlation-ID`: optional UUID on requests, generated when absent or invalid and returned on every response. W3C `traceparent` is propagated when valid. Each order stores its original workflow correlationId, including on later action messages.
 - Shared errors apply to **every endpoint**: `400 INVALID_REQUEST` for malformed input, `401 UNAUTHENTICATED`, `403 FORBIDDEN`, `429 RATE_LIMITED` with Retry-After, `500 INTERNAL_ERROR` for unexpected faults and `503 SERVICE_UNAVAILABLE` when the serving service cannot safely complete the operation. A downstream asynchronous outage alone does not justify a 503 on order creation.
 - Object access is restricted to its customer, owning restaurant or assigned driver as specified below. Inaccessible or absent object IDs return `404 NOT_FOUND` to prevent enumeration. Use 403 for an authenticated role that cannot call the endpoint at all.
@@ -144,7 +147,7 @@ X-Correlation-ID: 00000000-0000-4000-8000-000000000040
 Admin rules:
 
 - RESTAURANT requires `restaurantId` (an existing Catalog restaurant); DRIVER causes Identity to generate a `driverId`. Any other combination, such as `restaurantId` without RESTAURANT, returns `422 INVALID_ROLE_LINK`.
-- No password is sent through this API: the new user sets it on first login through the Identity activation flow.
+- No password is sent through this API. Identity emails the new user a one-time activation link (`/activate?token=...`, valid for 72 hours; only the SHA-256 hash of the token is stored) where they set their password. Until then the profile cannot log in. The email is sent after the profile commits; a failed send is logged without the recipient or the token.
 - Deactivating a profile revokes its refresh tokens immediately; issued access tokens stay valid until their 15-minute expiry. Inactive profiles cannot log in.
 - An ADMIN cannot deactivate their own profile (`409 INVALID_TRANSITION`).
 - The `restaurantId` and `driverId` links become token claims that Restaurants and Delivery use for ownership checks. Delivery creates the Driver record with `onDuty: false` on the first authenticated request carrying a new `driverId`.
@@ -336,7 +339,7 @@ X-Correlation-ID: 00000000-0000-4000-8000-000000000072
 
 ### 3.7 Internal service endpoints
 
-Internal endpoints are not routed by the API Gateway. They require a service access token (OAuth 2.0 client credentials issued by Identity & Access) whose client is listed below; any other caller receives 403.
+Internal endpoints are not routed by the API Gateway. They require a service access token (OAuth 2.0 client credentials issued by Identity & Access at `/oauth2/token`) with audience `eatsnow-internal` and the endpoint's scope, whose client is listed below; a missing or invalid token receives 401 and any other client 403. The caller caches the token until shortly before it expires.
 
 | Method and path | Allowed caller | Request body | Responses | Example |
 | --- | --- | --- | --- | --- |
@@ -520,6 +523,21 @@ The system SHALL centrally manage USER, RESTAURANT and DRIVER profiles and acces
 
 - **WHEN** an ADMIN creates a DRIVER profile, and a USER attempts the same request
 - **THEN** Identity creates the driver profile with a generated driverId for the ADMIN and returns 403 to the USER without creating any profile or role.
+
+#### Scenario: Activate an account created by an ADMIN
+
+- **WHEN** the person follows the emailed activation link and sets a password
+- **THEN** the profile can log in with that password, the link cannot be used again, and before activation every login attempt fails.
+
+#### Scenario: Self-register as a customer
+
+- **WHEN** a visitor creates an account on the Identity registration page
+- **THEN** Identity creates an active profile with only the USER role, and no public flow can grant RESTAURANT, DRIVER or ADMIN.
+
+#### Scenario: Keep service tokens out of the public API
+
+- **WHEN** a client-credentials token (audience `eatsnow-internal`) is sent to the Gateway, or a user access token is sent to an internal endpoint
+- **THEN** the request is rejected with 401 because the audience does not match.
 
 #### Scenario: Reject an invalid access token
 

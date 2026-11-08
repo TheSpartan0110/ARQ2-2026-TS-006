@@ -70,7 +70,8 @@ eatsnow:
   payment:
     token-key: ${EATSNOW_PAYMENT_TOKEN_KEY:ZWF0c25vdy1kZXYtcGF5bWVudC10b2tlbi1rZXktMzI=} # DEV ONLY
   security:
-    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/.well-known/jwks.json}
+    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/oauth2/jwks}
+    issuer: ${IDENTITY_ISSUER:http://localhost:8090} # Spec 3.1: public issuer (the Gateway)
     required-role: USER
   jwks:
     catalog-url: ${CATALOG_JWKS_URL:http://catalog:8080/api/v1/catalog/jwks.json}

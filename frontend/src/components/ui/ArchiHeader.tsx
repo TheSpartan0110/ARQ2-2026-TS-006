@@ -1,6 +1,6 @@
 import React from 'react'
 import { UtensilsCrossed, LogOut, KeyRound, User, Sparkles } from 'lucide-react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ArchiButton } from './ArchiButton'
 import { ArchiBadge } from './ArchiBadge'
 import { useAuth } from '../../context/AuthContext'
@@ -8,12 +8,11 @@ import { cn } from '../../utils/cn'
 
 export const ArchiHeader: React.FC = () => {
   const { profile, token, logout } = useAuth()
-  const navigate = useNavigate()
   const location = useLocation()
 
+  // Signs out of Identity too; Identity then redirects back to the app.
   const handleLogout = () => {
-    logout()
-    navigate('/login')
+    void logout()
   }
 
   const isJwksActive = location.pathname === '/jwks'

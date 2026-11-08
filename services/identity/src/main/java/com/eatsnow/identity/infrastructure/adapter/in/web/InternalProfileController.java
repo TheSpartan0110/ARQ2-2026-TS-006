@@ -3,22 +3,19 @@ package com.eatsnow.identity.infrastructure.adapter.in.web;
 import com.eatsnow.common.domain.exception.ForbiddenException;
 import com.eatsnow.identity.domain.model.Profile;
 import com.eatsnow.identity.domain.port.in.GetProfileUseCase;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Internal endpoint for Notifications (Spec 3.7). It is NOT routed by the API Gateway. Any other caller receives 403.
- *
- * DEVIATION (Wave 2): the spec requires an OAuth 2.0 client-credentials service token issued by Identity. Identity does
- * not issue those yet, so the caller proves itself with a shared key in X-Service-Key.
- * TODO: replace with client-credentials tokens whose client is listed for this endpoint.
+ * Internal endpoint for Notifications (Spec 3.7). It is NOT routed by the API Gateway. The security chain already
+ * requires a client-credentials token (audience eatsnow-internal) with the internal.profiles.read scope; this
+ * controller additionally requires the client to be listed. Any other caller receives 403.
  */
 @RestController
 public class InternalProfileController {
@@ -26,20 +23,18 @@ public class InternalProfileController {
     public record ContactResponse(UUID profileId, String displayName, String email) { }
 
     private final GetProfileUseCase getProfileUseCase;
-    private final String serviceKey;
+    private final Set<String> allowedClients;
 
     public InternalProfileController(GetProfileUseCase getProfileUseCase,
-                                     @Value("${eatsnow.internal.service-key:dev-internal-service-key}") String serviceKey) {
+                                     @Value("${eatsnow.internal.allowed-clients}") Set<String> allowedClients) {
         this.getProfileUseCase = getProfileUseCase;
-        this.serviceKey = serviceKey;
+        this.allowedClients = allowedClients;
     }
 
     @GetMapping("/internal/v1/profiles/{profileId}/contact")
-    public ResponseEntity<ContactResponse> contact(
-            @PathVariable UUID profileId,
-            @RequestHeader(value = "X-Service-Key", required = false) String providedKey) {
-        if (providedKey == null || !MessageDigest.isEqual(providedKey.getBytes(StandardCharsets.UTF_8),
-                serviceKey.getBytes(StandardCharsets.UTF_8))) {                       // constant-time comparison
+    public ResponseEntity<ContactResponse> contact(@PathVariable UUID profileId, Authentication caller) {
+        // For client-credentials tokens the subject is the client id.
+        if (caller == null || !allowedClients.contains(caller.getName())) {
             throw new ForbiddenException("Only an allowed internal service can call this endpoint");
         }
         Profile profile = getProfileUseCase.getProfileById(profileId);                // 404 NOT_FOUND when absent
