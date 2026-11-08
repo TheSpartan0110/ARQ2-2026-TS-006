@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Activate account · EatsNow</title>
+    <link rel="icon" href="data:,"> <!-- no favicon request to the Gateway -->
+    <link rel="stylesheet" th:href="@{/css/identity.css}">
+</head>
+<body>
+<main>
+    <p class="brand">EatsNow</p>
+    <h1>Activate your account</h1>
+
+    <th:block th:if="${usable}">
+        <p class="message error" th:if="${error}" th:text="${error}"></p>
+        <form method="post" th:action="@{/activate}">
+            <input type="hidden" name="token" th:value="${token}">
+            <label>New password
+                <input type="password" name="password" minlength="8" maxlength="72" autocomplete="new-password"
+                       required autofocus>
+            </label>
+            <p class="hint">8 to 72 characters.</p>
+            <label>Confirm password
+                <input type="password" name="confirmPassword" minlength="8" maxlength="72"
+                       autocomplete="new-password" required>
+            </label>
+            <button type="submit">Set password</button>
+        </form>
+    </th:block>
+
+    <p class="message error" th:unless="${usable}">
+        This activation link is invalid, expired or already used. Ask an administrator for a new account link.
+    </p>
+
+    <p class="alt"><a th:href="@{/login}">Back to sign in</a></p>
+</main>
+</body>
+</html>

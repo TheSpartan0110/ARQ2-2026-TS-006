@@ -1,5 +1,7 @@
 server:
   port: 8080
+  # Identity is reached through the Gateway: build login redirects from X-Forwarded-* (public host localhost:8090).
+  forward-headers-strategy: framework
 
 management:
   server:
@@ -48,6 +50,28 @@ spring:
     enabled: true
     schemas: identity
     locations: classpath:db/migration
+
+  mail:
+    host: ${SMTP_HOST:mailpit}
+    port: ${SMTP_PORT:1025}
+
+eatsnow:
+  identity:
+    # Public issuer (Spec 3.1): the Gateway. Tokens carry it as `iss` whatever host a request reached Identity on.
+    issuer: ${IDENTITY_ISSUER:http://localhost:8090}
+    public-url: ${IDENTITY_PUBLIC_URL:http://localhost:8090}
+    mail-from: ${IDENTITY_MAIL_FROM:no-reply@eatsnow.test}
+    clients:
+      web:
+        redirect-uris: ${WEB_REDIRECT_URIS:http://localhost:5173/callback}
+        post-logout-redirect-uri: ${WEB_POST_LOGOUT_REDIRECT_URI:http://localhost:5173/}
+      cli:
+        redirect-uris: ${CLI_REDIRECT_URIS:http://127.0.0.1:8765/callback,https://oauth.pstmn.io/v1/callback}
+        secret: ${CLI_CLIENT_SECRET:dev-cli-secret} # DEV ONLY
+      notifications:
+        secret: ${NOTIFICATIONS_CLIENT_SECRET:dev-notifications-secret} # DEV ONLY
+  internal:
+    allowed-clients: notifications # Spec 3.7: clients allowed on /internal/v1/profiles/{id}/contact
 
 logging:
   level:

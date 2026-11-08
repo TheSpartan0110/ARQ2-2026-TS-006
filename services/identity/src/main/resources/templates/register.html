@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Create account · EatsNow</title>
+    <link rel="icon" href="data:,"> <!-- no favicon request to the Gateway -->
+    <link rel="stylesheet" th:href="@{/css/identity.css}">
+</head>
+<body>
+<main>
+    <p class="brand">EatsNow</p>
+    <h1>Create your account</h1>
+
+    <p class="message error" th:if="${error}" th:text="${error}"></p>
+
+    <form method="post" th:action="@{/register}">
+        <label>Name
+            <input type="text" name="displayName" maxlength="100" autocomplete="name" required
+                   th:value="${displayName}">
+        </label>
+        <label>Email
+            <input type="email" name="email" autocomplete="email" required th:value="${email}">
+        </label>
+        <label>Password
+            <input type="password" name="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+        </label>
+        <p class="hint">8 to 72 characters.</p>
+        <label>Confirm password
+            <input type="password" name="confirmPassword" minlength="8" maxlength="72" autocomplete="new-password"
+                   required>
+        </label>
+        <button type="submit">Create account</button>
+    </form>
+
+    <p class="alt">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+</main>
+</body>
+</html>

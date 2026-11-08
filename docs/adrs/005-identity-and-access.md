@@ -1,6 +1,6 @@
 # ADR 005 — Identity and Access with Spring Authorization Server
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented in Wave 2)
 - **Category:** Security
 
 ## Context and Problem
@@ -17,11 +17,12 @@ EatsNow must centrally manage profiles and access for customers, restaurants and
 
 The Identity & Access Service embeds Spring Authorization Server and acts as the OIDC provider for EatsNow, as the single container shown in the C4 diagram. It stores credentials, profiles and roles (`USER`, `RESTAURANT`, `DRIVER`, `ADMIN`) in the `identity` schema and issues signed JWT access tokens.
 
-- Customer, restaurant and driver apps log in with the authorization-code flow with PKCE.
-- Access tokens carry the subject, roles and, when applicable, `restaurantId` or `driverId` claims. They expire after 15 minutes; refresh tokens rotate on use.
-- The API Gateway and every service validate signature, issuer, audience and expiry using the published JWKS keys.
-- Services use the client-credentials flow for internal calls.
-- Customers self-register as `USER`. Restaurant, driver and admin accounts are created only by an `ADMIN`; no public endpoint can grant roles.
+- Customer, restaurant and driver apps log in with the authorization-code flow with PKCE on the Identity login page. The issuer is the public Gateway URL, so login also goes through the single entry point.
+- Access tokens carry the subject (profile ID), roles and, when applicable, `restaurantId` or `driverId` claims. They expire after 15 minutes. Refresh tokens rotate on use and expire after 8 hours; authorizations are stored in the `identity` schema so that deactivating a profile revokes them at once.
+- The browser app is a public client. Spring Authorization Server, following OAuth 2.1, issues no refresh token to public clients, so the app renews an expired access token by redirecting to Identity: while the Identity login session is alive this needs no password. Rotating refresh tokens are used by the confidential client for scripts, Postman and load tests.
+- The API Gateway and every service validate signature, issuer, audience and expiry using the published JWKS keys. People's tokens have audience `eatsnow-api`; service tokens have audience `eatsnow-internal`, so neither is accepted where the other belongs.
+- Services use the client-credentials flow for internal calls (Notifications reads customer contact data).
+- Customers self-register as `USER`. Restaurant, driver and admin accounts are created only by an `ADMIN`; no public endpoint can grant roles. The person activates the account through a one-time link emailed by Identity and sets the password there; no password travels through the admin API.
 
 ## Trade-offs
 
@@ -36,6 +37,8 @@ The Identity & Access Service embeds Spring Authorization Server and acts as the
 - The team must configure and maintain authorization-server features (key rotation, consent, client registration) that Keycloak offers out of the box.
 - If the Identity service is down, new logins and token refreshes fail, although already issued tokens remain valid until expiry.
 - Revoked access remains usable until the short-lived access token expires.
+- The browser app cannot hold a refresh token; it depends on the Identity login session to renew silently.
+- In Wave 2 the signing key is generated at startup, so restarting Identity invalidates issued tokens (verifiers refresh the JWKS and users log in again). Production needs a persistent key with rotation.
 
 These risks will be mitigated through short token lifetimes, key rotation with overlapping JWKS keys, health checks and alerts on the Identity service, and the option to replace it with Keycloak without changing the token contract.
 

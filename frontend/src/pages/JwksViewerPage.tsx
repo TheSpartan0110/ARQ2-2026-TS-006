@@ -77,7 +77,7 @@ export const JwksViewerPage: React.FC = () => {
                 Public JWKS Key Registry
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                Standard RFC 7517 endpoint: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-emerald-700">/.well-known/jwks.json</code>
+                Standard RFC 7517 endpoint: <code className="bg-slate-100 px-1.5 py-0.5 rounded font-mono text-emerald-700">/oauth2/jwks</code>
               </p>
             </div>
           </div>

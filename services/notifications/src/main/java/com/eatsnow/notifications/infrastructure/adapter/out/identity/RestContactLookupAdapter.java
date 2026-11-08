@@ -20,42 +20,47 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Calls the internal Identity endpoint (Spec 3.7) with a 2-second timeout. A timeout or a server error is transient and
- * retried by the dispatcher; a 404 is permanent. The result is never cached and never logged.
- *
- * DEVIATION (Wave 2): the spec asks for an OAuth 2.0 client-credentials service token issued by Identity. Identity does
- * not issue those yet, so a shared service key travels in X-Service-Key. TODO: replace with client credentials.
+ * Calls the internal Identity endpoint (Spec 3.7) with a 2-second timeout, authenticated with a client-credentials
+ * service token issued by Identity. A timeout or a server error is transient and retried by the dispatcher; a 404 is
+ * permanent. The result is never cached and never logged.
  */
 @Component
 public class RestContactLookupAdapter implements ContactLookupPort {
     private static final Duration TIMEOUT = Duration.ofSeconds(2);
+    private static final String SCOPE = "internal.profiles.read";
 
     private final String identityUrl;
-    private final String serviceKey;
     private final ObjectMapper mapper;
     private final HttpClient http;
+    private final ClientCredentialsTokenProvider serviceToken;
 
     public RestContactLookupAdapter(@Value("${eatsnow.identity.url}") String identityUrl,
-                                    @Value("${eatsnow.identity.service-key}") String serviceKey, ObjectMapper mapper,
-                                    ObservationRegistry observations, MeterRegistry meters) {
+                                    @Value("${eatsnow.identity.client-id}") String clientId,
+                                    @Value("${eatsnow.identity.client-secret}") String clientSecret,
+                                    ObjectMapper mapper, ObservationRegistry observations, MeterRegistry meters) {
         this.identityUrl = identityUrl;
-        this.serviceKey = serviceKey;
         this.mapper = mapper;
         // Instrumented client: the lookup is a client span that propagates traceparent to Identity (Spec 6.3).
         this.http = MicrometerHttpClient.instrumentationBuilder(
                         HttpClient.newBuilder().connectTimeout(TIMEOUT).build(), meters)
                 .observationRegistry(observations)
                 .build();
+        this.serviceToken = new ClientCredentialsTokenProvider(http, mapper, identityUrl, clientId, clientSecret,
+                SCOPE, TIMEOUT);
     }
 
     @Override
     public CustomerContact find(UUID profileId) {
         HttpRequest request = HttpRequest.newBuilder(URI.create(identityUrl + "/internal/v1/profiles/" + profileId + "/contact"))
-                .timeout(TIMEOUT).header("X-Service-Key", serviceKey)
+                .timeout(TIMEOUT).header("Authorization", "Bearer " + serviceToken.token())
                 .header(MicrometerHttpClient.URI_PATTERN_HEADER, "/internal/v1/profiles/{profileId}/contact")
                 .GET().build();
         try {
             HttpResponse<String> response = http.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 401) {
+                serviceToken.invalidate();             // e.g. Identity restarted with a new signing key; retried
+                throw new TransientNotificationException("Identity rejected the service token", null);
+            }
             if (response.statusCode() == 404) {
                 throw new ContactNotFoundException("Identity has no contact for the profile");
             }

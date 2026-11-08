@@ -54,6 +54,13 @@ spring:
       port: ${REDIS_PORT:6379}
       timeout: 2000ms
 
+eatsnow:
+  security:
+    identity-jwks-url: ${IDENTITY_JWKS_URL:http://identity:8080/oauth2/jwks}
+    issuer: ${IDENTITY_ISSUER:http://localhost:8090}
+    required-role: ANY # Spec 3.3: catalog reads for any active role; POST /quotes also requires USER
+    public-paths: /api/v1/catalog/jwks.json # quote-signing keys, fetched by Orders without a user token
+
 logging:
   level:
     root: INFO

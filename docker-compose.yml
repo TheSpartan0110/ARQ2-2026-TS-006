@@ -186,6 +186,7 @@ services:
       CATALOG_DB_PASSWORD: ${CATALOG_DB_PASSWORD:-catalog_dev_pw}
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      IDENTITY_JWKS_URL: http://identity:8080/oauth2/jwks
     ports:
       - "8080:8080"
       - "8081:8081"
@@ -207,12 +208,21 @@ services:
       DB_URL: jdbc:postgresql://postgres:5432/eatsnow?currentSchema=identity
       DB_USER: identity_svc
       IDENTITY_DB_PASSWORD: ${IDENTITY_DB_PASSWORD:-identity_dev_pw}
+      # OIDC provider (ADR 005): public issuer is the Gateway; activation emails go to Mailpit locally.
+      IDENTITY_ISSUER: http://localhost:8090
+      IDENTITY_PUBLIC_URL: http://localhost:8090
+      SMTP_HOST: mailpit
+      SMTP_PORT: 1025
+      CLI_CLIENT_SECRET: ${CLI_CLIENT_SECRET:-dev-cli-secret} # DEV ONLY
+      NOTIFICATIONS_CLIENT_SECRET: ${NOTIFICATIONS_CLIENT_SECRET:-dev-notifications-secret} # DEV ONLY
     ports:
       - "8082:8080"
       - "8083:8081"
     depends_on:
       postgres:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     networks: [eatsnow]
 
   orders:
@@ -228,7 +238,7 @@ services:
       ORDERS_MQ_PASSWORD: ${ORDERS_MQ_PASSWORD:-orders_mq_dev_pw}
       EATSNOW_PAYMENT_TOKEN_KEY: ${PAYMENT_TOKEN_KEY:-ZWF0c25vdy1kZXYtcGF5bWVudC10b2tlbi1rZXktMzI=} # DEV ONLY
       OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
-      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+      IDENTITY_JWKS_URL: http://identity:8080/oauth2/jwks
       CATALOG_JWKS_URL: http://catalog:8080/api/v1/catalog/jwks.json
     depends_on:
       postgres:
@@ -269,7 +279,7 @@ services:
       RABBITMQ_USER: restaurants_mq
       RESTAURANTS_MQ_PASSWORD: ${RESTAURANTS_MQ_PASSWORD:-restaurants_mq_dev_pw}
       OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
-      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+      IDENTITY_JWKS_URL: http://identity:8080/oauth2/jwks
     depends_on:
       postgres:
         condition: service_healthy
@@ -289,7 +299,7 @@ services:
       RABBITMQ_USER: delivery_mq
       DELIVERY_MQ_PASSWORD: ${DELIVERY_MQ_PASSWORD:-delivery_mq_dev_pw}
       OTLP_TRACES_ENDPOINT: http://otel-collector:4318/v1/traces
-      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+      IDENTITY_JWKS_URL: http://identity:8080/oauth2/jwks
     depends_on:
       postgres:
         condition: service_healthy
@@ -312,7 +322,7 @@ services:
       SMTP_HOST: mailpit
       SMTP_PORT: 1025
       IDENTITY_URL: http://identity:8080
-      INTERNAL_SERVICE_KEY: ${INTERNAL_SERVICE_KEY:-dev-internal-service-key} # DEV ONLY
+      NOTIFICATIONS_CLIENT_SECRET: ${NOTIFICATIONS_CLIENT_SECRET:-dev-notifications-secret} # DEV ONLY (Spec 3.7 client credentials)
     depends_on:
       postgres:
         condition: service_healthy
@@ -333,7 +343,7 @@ services:
       ORDERS_URL: http://orders:8080
       RESTAURANTS_URL: http://restaurants:8080
       DELIVERY_URL: http://delivery:8080
-      IDENTITY_JWKS_URL: http://identity:8080/.well-known/jwks.json
+      IDENTITY_JWKS_URL: http://identity:8080/oauth2/jwks
     ports:
       - "8090:8080" # public entry point; catalog (8080) and identity (8082) keep their direct ports for Postman
     depends_on: [identity, catalog, orders, restaurants, delivery]

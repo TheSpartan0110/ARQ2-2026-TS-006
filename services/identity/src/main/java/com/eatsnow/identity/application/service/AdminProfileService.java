@@ -13,21 +13,19 @@ import com.eatsnow.common.domain.model.Role;
 import com.eatsnow.common.domain.port.out.IdempotencyStoragePort;
 import com.eatsnow.identity.domain.model.Profile;
 import com.eatsnow.identity.domain.port.in.AdminProfileUseCase;
+import com.eatsnow.identity.domain.port.out.ActivationNotifierPort;
+import com.eatsnow.identity.domain.port.out.ActivationTokenRepositoryPort;
 import com.eatsnow.identity.domain.port.out.ProfileRepositoryPort;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.eatsnow.identity.domain.port.out.TokenRevocationPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
-import java.util.HexFormat;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 /**
  * Service managing administrative operations on user profiles (Spec 3.2).
@@ -35,20 +33,26 @@ import java.util.regex.Pattern;
 @Service
 public class AdminProfileService implements AdminProfileUseCase {
 
-    private static final Pattern EMAIL_PATTERN = Pattern.compile("^[A-Za-z0-9+_.-]+@(.+)$");
+    static final Duration ACTIVATION_LINK_VALIDITY = Duration.ofHours(72);
 
     private final ProfileRepositoryPort profileRepository;
     private final IdempotencyStoragePort idempotencyStorage;
-    private final PasswordEncoder passwordEncoder;
+    private final ActivationTokenRepositoryPort activationTokens;
+    private final ActivationNotifierPort activationNotifier;
+    private final TokenRevocationPort tokenRevocation;
 
     public AdminProfileService(
             ProfileRepositoryPort profileRepository,
             IdempotencyStoragePort idempotencyStorage,
-            PasswordEncoder passwordEncoder
+            ActivationTokenRepositoryPort activationTokens,
+            ActivationNotifierPort activationNotifier,
+            TokenRevocationPort tokenRevocation
     ) {
         this.profileRepository = profileRepository;
         this.idempotencyStorage = idempotencyStorage;
-        this.passwordEncoder = passwordEncoder;
+        this.activationTokens = activationTokens;
+        this.activationNotifier = activationNotifier;
+        this.tokenRevocation = tokenRevocation;
     }
 
     @Override
@@ -74,14 +78,8 @@ public class AdminProfileService implements AdminProfileUseCase {
         Objects.requireNonNull(email, "email cannot be null");
         Objects.requireNonNull(roles, "roles cannot be null");
 
-        if (displayName.isBlank() || displayName.length() > 100) {
-            throw new InvalidRequestException("displayName must be between 1 and 100 characters");
-        }
-
-        String normalizedEmail = email.trim().toLowerCase();
-        if (!EMAIL_PATTERN.matcher(normalizedEmail).matches()) {
-            throw new InvalidRequestException("Invalid email format: " + email);
-        }
+        String name = ProfileRules.validDisplayName(displayName);
+        String normalizedEmail = ProfileRules.normalizeEmail(email);
 
         if (roles.isEmpty() || roles.size() > 4) {
             throw new InvalidRequestException("roles must contain between 1 and 4 roles");
@@ -123,23 +121,27 @@ public class AdminProfileService implements AdminProfileUseCase {
             idempotencyStorage.start(scopeKey, requestHash);
         }
 
-        // New profile created with active: true; credentials set during activation flow (Spec 3.2)
+        // Spec 3.2: no password travels through this API. The profile has none until the person follows the
+        // one-time activation link and sets it; until then it cannot log in.
         Instant now = Instant.now();
-        String initialPasswordHash = passwordEncoder.encode(UUID.randomUUID().toString());
         Profile newProfile = new Profile(
                 UUID.randomUUID(),
-                displayName.trim(),
+                name,
                 normalizedEmail,
                 roles,
                 restaurantId,
                 driverId,
-                initialPasswordHash,
+                null,
                 true,
                 now,
                 now
         );
 
         Profile saved = profileRepository.save(newProfile);
+
+        String activationToken = ProfileRules.newActivationToken();
+        activationTokens.save(ProfileRules.sha256(activationToken), saved.id(), now.plus(ACTIVATION_LINK_VALIDITY));
+        activationNotifier.sendActivationLink(saved, activationToken);
 
         if (idempotencyKey != null) {
             idempotencyStorage.complete(scopeKey, requestHash, 201, "{\"id\":\"" + saved.id() + "\"}");
@@ -182,6 +184,11 @@ public class AdminProfileService implements AdminProfileUseCase {
         Profile updated = profile.withActive(active, Instant.now());
         Profile saved = profileRepository.save(updated);
 
+        // Spec 3.2: deactivation revokes refresh tokens at once; issued access tokens expire within 15 minutes.
+        if (!active) {
+            tokenRevocation.revokeAll(saved.email());
+        }
+
         if (idempotencyKey != null) {
             idempotencyStorage.complete(scopeKey, requestHash, 200, "{\"id\":\"" + saved.id() + "\",\"active\":" + active + "}");
         }
@@ -190,12 +197,6 @@ public class AdminProfileService implements AdminProfileUseCase {
     }
 
     private String computeSha256(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256 algorithm not available", e);
-        }
+        return ProfileRules.sha256(input);
     }
 }

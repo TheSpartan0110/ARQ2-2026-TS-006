@@ -9,14 +9,18 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    port: 3000,
+    // 5173 is the redirect URI registered for the `eatsnow-web` OIDC client (Grafana uses 3000).
+    port: 5173,
+    strictPort: true,
+    // Same-origin API calls through the API Gateway, the single entry point. The OIDC login itself runs on the
+    // Gateway origin (http://localhost:8090).
     proxy: {
       '/api': {
-        target: 'http://localhost:8082',
+        target: 'http://localhost:8090',
         changeOrigin: true,
       },
-      '/.well-known': {
-        target: 'http://localhost:8082',
+      '/oauth2/jwks': {
+        target: 'http://localhost:8090',
         changeOrigin: true,
       },
     },

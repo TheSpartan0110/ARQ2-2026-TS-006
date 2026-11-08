@@ -8,12 +8,7 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string"
-    },
-    {
-      "key": "userToken",
-      "value": "",
+      "value": "http://localhost:8090",
       "type": "string"
     },
     {
@@ -48,8 +43,14 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/restaurants?limit=20",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "restaurants"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "restaurants"
+              ],
               "query": [
                 {
                   "key": "limit",
@@ -77,8 +78,15 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/restaurants/{{restaurantId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "restaurants", "{{restaurantId}}"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "restaurants",
+                "{{restaurantId}}"
+              ]
             },
             "description": "Retrieves restaurant details. Cached in Redis (ADR 002)."
           }
@@ -95,8 +103,16 @@
             ],
             "url": {
               "raw": "{{baseUrl}}/api/v1/restaurants/{{restaurantId}}/menu",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "restaurants", "{{restaurantId}}", "menu"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "restaurants",
+                "{{restaurantId}}",
+                "menu"
+              ]
             },
             "description": "Retrieves the full menu items for a restaurant with minor-unit Money prices."
           }
@@ -127,11 +143,6 @@
             "method": "POST",
             "header": [
               {
-                "key": "Authorization",
-                "value": "Bearer {{userToken}}",
-                "description": "Optional in standalone test; extracted by Gateway in production"
-              },
-              {
                 "key": "Idempotency-Key",
                 "value": "{{$guid}}"
               },
@@ -150,8 +161,14 @@
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/quotes",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "quotes"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "quotes"
+              ]
             },
             "description": "Calculates checkout quote against PostgreSQL, commits idempotency, and signs an asymmetric RS256 quoteToken with 120s TTL (Spec 2.3 & 3.3)."
           }
@@ -168,9 +185,14 @@
             "url": {
               "raw": "http://localhost:8081/actuator/prometheus",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "8081",
-              "path": ["actuator", "prometheus"]
+              "path": [
+                "actuator",
+                "prometheus"
+              ]
             },
             "description": "Prometheus metric scrape endpoint on management port 8081."
           }
@@ -182,14 +204,87 @@
             "url": {
               "raw": "http://localhost:8081/actuator/health",
               "protocol": "http",
-              "host": ["localhost"],
+              "host": [
+                "localhost"
+              ],
               "port": "8081",
-              "path": ["actuator", "health"]
+              "path": [
+                "actuator",
+                "health"
+              ]
             },
             "description": "Service health check on management port."
           }
         }
-      ]
+      ],
+      "auth": {
+        "type": "noauth"
+      }
     }
-  ]
+  ],
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "grant_type",
+        "value": "authorization_code_with_pkce",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "{{baseUrl}}/oauth2/authorize",
+        "type": "string"
+      },
+      {
+        "key": "accessTokenUrl",
+        "value": "{{baseUrl}}/oauth2/token",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "eatsnow-cli",
+        "type": "string"
+      },
+      {
+        "key": "clientSecret",
+        "value": "dev-cli-secret",
+        "type": "string"
+      },
+      {
+        "key": "scope",
+        "value": "openid",
+        "type": "string"
+      },
+      {
+        "key": "redirect_uri",
+        "value": "https://oauth.pstmn.io/v1/callback",
+        "type": "string"
+      },
+      {
+        "key": "challengeAlgorithm",
+        "value": "S256",
+        "type": "string"
+      },
+      {
+        "key": "client_authentication",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "tokenName",
+        "value": "EatsNow customer (log in as alex@example.test / password123)",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      },
+      {
+        "key": "useBrowser",
+        "value": false,
+        "type": "boolean"
+      }
+    ]
+  }
 }

@@ -38,4 +38,18 @@ public record Profile(
     public Profile withActive(boolean newActive, Instant updateTime) {
         return new Profile(id, displayName, email, roles, restaurantId, driverId, passwordHash, newActive, createdAt, updateTime);
     }
+
+    public Profile withPasswordHash(String newPasswordHash, Instant updateTime) {
+        return new Profile(id, displayName, email, roles, restaurantId, driverId, newPasswordHash, active, createdAt, updateTime);
+    }
+
+    /** Accounts created by an ADMIN have no password until activated (Spec 3.2). */
+    public boolean isActivated() {
+        return passwordHash != null;
+    }
+
+    /** Only active, activated profiles may log in or obtain tokens (Spec 3.2). */
+    public boolean canLogIn() {
+        return active && isActivated();
+    }
 }

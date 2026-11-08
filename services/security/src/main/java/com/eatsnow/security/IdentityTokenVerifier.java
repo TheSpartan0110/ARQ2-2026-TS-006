@@ -9,16 +9,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Verifies Identity access tokens locally: pinned RS256 signature with cached keys, issuer, expiry and subject.
- * TODO: Identity does not issue an `aud` claim yet; add the audience check (Spec 3.1) once it does.
+ * Verifies Identity access tokens locally (Spec 3.1): pinned RS256 signature with cached keys, issuer, audience,
+ * expiry and subject. Service tokens (audience eatsnow-internal) are rejected here.
  */
 public class IdentityTokenVerifier {
-    private static final String ISSUER = "eatsnow-identity";
+    public static final String API_AUDIENCE = "eatsnow-api";
 
     private final JwksKeySource identityKeys;
+    private final String issuer;
 
-    public IdentityTokenVerifier(JwksKeySource identityKeys) {
+    public IdentityTokenVerifier(JwksKeySource identityKeys, String issuer) {
         this.identityKeys = identityKeys;
+        this.issuer = issuer;
     }
 
     public Optional<AuthenticatedUser> verify(String token) {
@@ -28,7 +30,8 @@ public class IdentityTokenVerifier {
                 return Optional.empty();
             }
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
-            if (!ISSUER.equals(claims.getIssuer()) || claims.getExpirationTime() == null
+            if (!issuer.equals(claims.getIssuer()) || claims.getAudience() == null
+                    || !claims.getAudience().contains(API_AUDIENCE) || claims.getExpirationTime() == null
                     || claims.getExpirationTime().toInstant().isBefore(Instant.now())) {
                 return Optional.empty();
             }

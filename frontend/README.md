@@ -21,10 +21,15 @@ In accordance with platform conventions, UI primitives wrap **React Aria Compone
 
 ## 2. Authentication Flow
 
-- **Login (`POST /api/v1/auth/token`):** Authenticates user credentials against the Identity & Access Service and obtains an RS256 JWT access token valid for 15 minutes.
+- **Login (OIDC, ADR 005):** "Sign in" redirects to the Identity login page through the API Gateway (`http://localhost:8090`, the issuer). The app is the public client `eatsnow-web` and uses the authorization-code flow with PKCE ([`oidc-client-ts`](src/auth/oidc.ts)); `/callback` exchanges the code for an RS256 access token valid for 15 minutes. The app never sees the password.
+- **Renewal:** public clients receive no refresh token. When the access token expires, the app redirects to Identity again; while the Identity login session is alive this returns without asking for the password.
+- **Registration:** "Create an account" opens the Identity registration page (`/register`); new accounts get the `USER` role only.
+- **Logout:** ends the Identity session as well (OIDC RP-initiated logout) and returns to the app.
 - **Profile (`GET /api/v1/profiles/me`):** Retrieves the authenticated user's profile with `Authorization: Bearer <token>`.
 - **Display Name Update (`PATCH /api/v1/profiles/me`):** Updates `displayName` enforcing `Idempotency-Key: UUID`.
-- **JWKS Inspector (`GET /.well-known/jwks.json`):** Shows published public RSA keys used by the Gateway and microservices for offline token validation.
+- **JWKS Inspector (`GET /oauth2/jwks`):** Shows published public RSA keys used by the Gateway and microservices for offline token validation.
+
+API calls go to `/api` on the dev server, which proxies them to the API Gateway.
 
 ---
 
@@ -37,7 +42,8 @@ cd frontend
 # Install dependencies
 pnpm install
 
-# Start development server (runs on http://localhost:3000)
+# Start development server (runs on http://localhost:5173, the registered OIDC redirect origin;
+# the backend must be up: docker compose up -d)
 pnpm dev
 
 # Build for production with TypeScript checks
