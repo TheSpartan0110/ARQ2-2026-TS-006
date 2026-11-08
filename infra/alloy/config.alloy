@@ -1,0 +1,58 @@
+// Grafana Alloy: ships the structured JSON logs of the EatsNow services to Loki (Spec 6.1 / 6.2).
+//
+// Logs are read through the Docker API (docker.sock), not from /var/lib/docker/containers: on Docker Desktop
+// (Windows, macOS) that folder lives inside Docker's VM and is empty from a container, so a file-based reader
+// ships nothing. The Docker API works the same on Docker Desktop and on Linux.
+
+// Every container of this Docker engine...
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// ...but only the eight business services (infrastructure containers do not follow the log schema).
+discovery.relabel "eatsnow" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    regex         = "gateway|identity|catalog|orders|payments|restaurants|delivery|notifications"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "container"
+  }
+}
+
+loki.source.docker "eatsnow" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.eatsnow.output
+  forward_to = [loki.process.eatsnow.receiver]
+}
+
+// Each line is one JSON object (Spec 6.2). `service` and `level` become Loki labels; per-entity fields such as
+// orderId or correlationId stay in the line and are filtered with `| json`, so the label set stays small.
+loki.process "eatsnow" {
+  stage.json {
+    expressions = {
+      service = "service",
+      level   = "level",
+    }
+  }
+
+  stage.labels {
+    values = {
+      service = "",
+      level   = "",
+    }
+  }
+
+  forward_to = [loki.write.local.receiver]
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

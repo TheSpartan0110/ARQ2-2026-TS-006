@@ -9,6 +9,7 @@ import com.eatsnow.delivery.domain.port.in.DeliveryActionUseCase;
 import com.eatsnow.delivery.domain.port.in.GetDeliveriesQuery;
 import com.eatsnow.delivery.infrastructure.adapter.in.web.dto.ActionRequestDto;
 import com.eatsnow.delivery.infrastructure.adapter.in.web.dto.DeliveryResponseDto;
+import com.eatsnow.messaging.tracing.TraceSupport;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,13 +35,15 @@ public class DeliveryController {
     private final DeliveryActionUseCase actions;
     private final DriverAccess access;
     private final ObjectMapper objectMapper;
+    private final TraceSupport trace;
 
     public DeliveryController(GetDeliveriesQuery queries, DeliveryActionUseCase actions, DriverAccess access,
-                              ObjectMapper objectMapper) {
+                              ObjectMapper objectMapper, TraceSupport trace) {
         this.queries = queries;
         this.actions = actions;
         this.access = access;
         this.objectMapper = objectMapper;
+        this.trace = trace;
     }
 
     @GetMapping
@@ -92,6 +95,8 @@ public class DeliveryController {
         }
         Delivery result = action.apply(new DeliveryActionUseCase.Command(driverId, access.user(request).userId(),
                 deliveryId, body.expectedVersion(), idempotencyKey, request.getRequestURI(), raw));
+        // Spec 6.3: this action starts its own trace; tag it with the stored workflow correlation id.
+        trace.tagCurrentWorkflow(result.orderId(), result.correlationId());
         return ResponseEntity.ok(DeliveryResponseDto.fromDomain(result));
     }
 

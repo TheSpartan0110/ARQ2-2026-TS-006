@@ -107,6 +107,7 @@ public class OutboxRelay {
     private void publishOne(Row row) throws Exception {
         String operation = "publish " + row.routingKey();
         Span span = trace.startSpan(row.traceparent(), operation, Span.Kind.PRODUCER);
+        TraceSupport.tagWorkflow(span, row.orderId(), row.correlationId());
         try (Tracer.SpanInScope ignored = trace.scope(span)) {
             LogContext.workflow(row.orderId(), row.correlationId());
             // The envelope carries the publish span, so the consumer's span is its child (Spec 6.3).

@@ -2,6 +2,7 @@ package com.eatsnow.orders.infrastructure.adapter.in.web;
 
 import com.eatsnow.common.domain.exception.InvalidRequestException;
 import com.eatsnow.common.web.filter.CorrelationContext;
+import com.eatsnow.messaging.tracing.TraceSupport;
 import com.eatsnow.orders.domain.model.OrderReceipt;
 import com.eatsnow.orders.domain.port.in.CreateOrderUseCase;
 import com.eatsnow.orders.domain.port.in.GetOrderQuery;
@@ -35,12 +36,14 @@ public class OrderController {
     private final CreateOrderUseCase createOrderUseCase;
     private final GetOrderQuery getOrderQuery;
     private final ObjectMapper objectMapper;
+    private final TraceSupport trace;
 
     public OrderController(CreateOrderUseCase createOrderUseCase, GetOrderQuery getOrderQuery,
-                           ObjectMapper objectMapper) {
+                           ObjectMapper objectMapper, TraceSupport trace) {
         this.createOrderUseCase = createOrderUseCase;
         this.getOrderQuery = getOrderQuery;
         this.objectMapper = objectMapper;
+        this.trace = trace;
     }
 
     /** Accepts the order once it is durably stored; never waits for Payments, Restaurants or Delivery. */
@@ -62,6 +65,7 @@ public class OrderController {
                 user.userId(), idempotencyKey, httpRequest.getRequestURI(), canonicalJson(request),
                 request.quoteToken(), request.deliveryAddress().toDomain(), request.paymentMethodToken(),
                 CorrelationContext.getCurrentCorrelationId()));
+        trace.tagCurrentWorkflow(receipt.orderId(), receipt.correlationId());     // Spec 6.3
 
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .location(URI.create("/api/v1/orders/" + receipt.orderId()))
