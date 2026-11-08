@@ -1,12 +1,14 @@
 package com.eatsnow.orders.infrastructure.adapter.in.web;
 
 import com.eatsnow.common.domain.exception.InvalidRequestException;
+import com.eatsnow.common.web.dto.PaginatedResponseDto;
 import com.eatsnow.common.web.filter.CorrelationContext;
 import com.eatsnow.messaging.tracing.TraceSupport;
 import com.eatsnow.orders.domain.model.OrderReceipt;
 import com.eatsnow.orders.domain.port.in.CreateOrderUseCase;
 import com.eatsnow.orders.domain.port.in.GetOrderQuery;
 import com.eatsnow.orders.infrastructure.adapter.in.web.dto.CreateOrderRequestDto;
+import com.eatsnow.orders.infrastructure.adapter.in.web.dto.OrderHistoryEntryDto;
 import com.eatsnow.orders.infrastructure.adapter.in.web.dto.OrderReceiptDto;
 import com.eatsnow.orders.infrastructure.adapter.in.web.dto.OrderResponseDto;
 import com.eatsnow.orders.infrastructure.adapter.in.web.dto.PaymentSummaryDto;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** REST controller for Orders and the payment projection (Spec 3.4). */
@@ -72,6 +76,17 @@ public class OrderController {
                 .body(OrderReceiptDto.fromDomain(receipt));
     }
 
+    /** The caller's own orders, newest first (Spec 3.4). */
+    @GetMapping
+    public ResponseEntity<PaginatedResponseDto<OrderResponseDto>> listOrders(
+            @RequestParam(defaultValue = "20") int limit,
+            @RequestParam(required = false) String cursor,
+            HttpServletRequest httpRequest) {
+        AuthenticatedUser user = BearerAuthenticationFilter.currentUser(httpRequest);
+        return ResponseEntity.ok(PaginatedResponseDto.fromDomain(
+                getOrderQuery.listOrders(user.userId(), limit, cursor), OrderResponseDto::fromDomain));
+    }
+
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderResponseDto> getOrder(@PathVariable UUID orderId, HttpServletRequest httpRequest) {
         AuthenticatedUser user = BearerAuthenticationFilter.currentUser(httpRequest);
@@ -82,6 +97,15 @@ public class OrderController {
     public ResponseEntity<PaymentSummaryDto> getPayment(@PathVariable UUID orderId, HttpServletRequest httpRequest) {
         AuthenticatedUser user = BearerAuthenticationFilter.currentUser(httpRequest);
         return ResponseEntity.ok(PaymentSummaryDto.fromDomain(getOrderQuery.getPayment(user.userId(), orderId)));
+    }
+
+    /** Every status and payment-status change of the order, oldest first (Spec 3.4). */
+    @GetMapping("/{orderId}/history")
+    public ResponseEntity<List<OrderHistoryEntryDto>> getHistory(@PathVariable UUID orderId,
+                                                                 HttpServletRequest httpRequest) {
+        AuthenticatedUser user = BearerAuthenticationFilter.currentUser(httpRequest);
+        return ResponseEntity.ok(getOrderQuery.getHistory(user.userId(), orderId).stream()
+                .map(OrderHistoryEntryDto::fromDomain).toList());
     }
 
     /** The request body re-serialized in a stable field order: the basis of the idempotency request hash. */

@@ -1,7 +1,10 @@
 package com.eatsnow.orders.domain.port.out;
 
+import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.orders.domain.model.Order;
+import com.eatsnow.orders.domain.model.OrderHistoryEntry;
 import com.eatsnow.orders.domain.model.OrderStateChange;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +20,9 @@ public interface OrderRepositoryPort {
     void update(Order order);
 
     void appendHistory(OrderStateChange change);
+
+    /** Keyset page of one customer's orders, newest first. */
+    PageResult<Order> findByCustomer(UUID customerId, int limit, String cursor);
+
+    List<OrderHistoryEntry> findHistory(UUID orderId);
 }

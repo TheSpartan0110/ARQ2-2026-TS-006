@@ -1,5 +1,5 @@
 import React from 'react'
-import { UtensilsCrossed, LogOut, KeyRound, User, Sparkles } from 'lucide-react'
+import { UtensilsCrossed, LogOut, User, Sparkles, Store, ReceiptText, ChefHat, Bike } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArchiButton } from './ArchiButton'
 import { ArchiBadge } from './ArchiBadge'
@@ -15,8 +15,24 @@ export const ArchiHeader: React.FC = () => {
     void logout()
   }
 
-  const isJwksActive = location.pathname === '/jwks'
   const isProfileActive = location.pathname === '/profile'
+
+  // Navigation of each role; the routes and the services enforce the same roles.
+  const roles = profile?.roles ?? []
+  const navItems = [
+    ...(roles.includes('USER')
+      ? [
+          { to: '/restaurants', label: 'Restaurants', icon: <Store className="w-4 h-4 text-emerald-500" /> },
+          { to: '/orders', label: 'My orders', icon: <ReceiptText className="w-4 h-4 text-emerald-500" /> },
+        ]
+      : []),
+    ...(roles.includes('RESTAURANT')
+      ? [{ to: '/restaurant', label: 'Orders', icon: <ChefHat className="w-4 h-4 text-amber-500" /> }]
+      : []),
+    ...(roles.includes('DRIVER')
+      ? [{ to: '/driver', label: 'Deliveries', icon: <Bike className="w-4 h-4 text-emerald-500" /> }]
+      : []),
+  ]
 
   return (
     <header className="sticky top-0 z-40 bg-white/75 backdrop-blur-xl border-b border-slate-200/80 shadow-xs">
@@ -45,16 +61,18 @@ export const ArchiHeader: React.FC = () => {
 
         {/* Navigation & User actions */}
         <div className="flex items-center gap-2.5 sm:gap-3">
-          <Link to="/jwks">
-            <ArchiButton
-              variant={isJwksActive ? 'secondary' : 'ghost'}
-              size="sm"
-              leftIcon={<KeyRound className="w-4 h-4 text-emerald-500" />}
-              className="hidden sm:inline-flex"
-            >
-              JWKS Keys
-            </ArchiButton>
-          </Link>
+          {token &&
+            navItems.map((item) => (
+              <Link key={item.to} to={item.to}>
+                <ArchiButton
+                  variant={location.pathname.startsWith(item.to) ? 'secondary' : 'ghost'}
+                  size="sm"
+                  leftIcon={item.icon}
+                >
+                  <span className="hidden sm:inline">{item.label}</span>
+                </ArchiButton>
+              </Link>
+            ))}
 
           {token && profile ? (
             <div className="flex items-center gap-2.5 sm:gap-3 pl-2 sm:pl-3 border-l border-slate-200/80">

@@ -1,9 +1,12 @@
 package com.eatsnow.orders.infrastructure.adapter.out.persistence;
 
+import com.eatsnow.common.domain.model.KeysetCursor;
 import com.eatsnow.common.domain.model.Money;
+import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.orders.domain.exception.QuoteAlreadyUsedException;
 import com.eatsnow.orders.domain.model.DeliveryAddress;
 import com.eatsnow.orders.domain.model.Order;
+import com.eatsnow.orders.domain.model.OrderHistoryEntry;
 import com.eatsnow.orders.domain.model.OrderItem;
 import com.eatsnow.orders.domain.model.OrderStateChange;
 import com.eatsnow.orders.domain.model.OrderStatus;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -75,6 +79,37 @@ public class PostgresOrderRepositoryAdapter implements OrderRepositoryPort {
                 change.fromStatus() != null ? change.fromStatus().name() : null, change.toStatus().name(),
                 change.fromPaymentStatus() != null ? change.fromPaymentStatus().name() : null,
                 change.toPaymentStatus().name(), change.orderVersion(), change.causedBy(), Instant.now()));
+    }
+
+    @Override
+    public PageResult<Order> findByCustomer(UUID customerId, int limit, String cursor) {
+        PageRequest page = PageRequest.of(0, limit + 1);          // one extra row tells whether another page exists
+        List<OrderEntity> rows;
+        if (cursor == null || cursor.isBlank()) {
+            rows = orders.findFirstPageByCustomer(customerId, page);
+        } else {
+            KeysetCursor from = KeysetCursor.decode(cursor);
+            rows = orders.findPageByCustomer(customerId, from.createdAt(), from.id(), page);
+        }
+        boolean hasMore = rows.size() > limit;
+        List<OrderEntity> visible = hasMore ? rows.subList(0, limit) : rows;
+        String next = hasMore
+                ? new KeysetCursor(visible.get(visible.size() - 1).getCreatedAt(),
+                        visible.get(visible.size() - 1).getId()).encode()
+                : null;
+        return new PageResult<>(visible.stream().map(this::toDomain).toList(), next);
+    }
+
+    @Override
+    public List<OrderHistoryEntry> findHistory(UUID orderId) {
+        return history.findByOrderIdOrderByOccurredAtAscIdAsc(orderId).stream()
+                .map(h -> new OrderHistoryEntry(
+                        h.getFromStatus() != null ? OrderStatus.valueOf(h.getFromStatus()) : null,
+                        OrderStatus.valueOf(h.getToStatus()),
+                        h.getFromPaymentStatus() != null ? PaymentStatus.valueOf(h.getFromPaymentStatus()) : null,
+                        PaymentStatus.valueOf(h.getToPaymentStatus()),
+                        h.getOrderVersion(), h.getCausedBy(), h.getOccurredAt()))
+                .toList();
     }
 
     private OrderEntity toEntity(Order o) {
