@@ -29,7 +29,7 @@ The system must accept an order without waiting for Payments, Restaurants or Del
 | Delivery Service ("Delivery") | Driver duty status, assignments, pickup and delivery progress. Schema `deliveries`. |
 | Notification Service ("Notifications") | Asynchronous customer notifications consumed from order status events. It never blocks order creation or state transitions. Schema `notifications` (deduplication and send attempts only). |
 | External Payment Provider | Third-party HTTPS payment API. Wave 2 uses a local test double. |
-| Observability | OpenTelemetry SDKs and Collector, Prometheus metrics, Grafana Loki logs, Grafana Tempo traces and Grafana dashboards. |
+| Observability | OpenTelemetry SDKs and Collector, Prometheus metrics, Grafana Loki logs, Grafana Tempo and Jaeger traces, and Grafana dashboards. |
 
 Each business service owns its persistent data. As in the container diagram, a single shared PostgreSQL instance hosts one schema per service, and each service connects with its own database user that has privileges only on its own schema. No service reads or writes another service's schema. Catalog uses an independent connection pool so purchasing load cannot exhaust catalog reads. RabbitMQ transports durable messages. Services and infrastructure run through Docker Compose in Wave 2. Payment and email providers may use local test doubles; real credentials or card numbers must never be committed.
 
@@ -42,7 +42,7 @@ The ADRs in `docs/adrs/` establish RabbitMQ with Transactional Outbox and idempo
 - Payment completes before restaurant acceptance is requested, so restaurants never see unpaid orders. If the restaurant rejects a paid order, it is refunded asynchronously.
 - `PaymentAuthorized` (the event name in the container diagram) is emitted only when the provider confirms the charge. The provider adapter authorizes and captures in one idempotent operation; a pending, timed-out or merely reserved authorization never produces `PaymentAuthorized`.
 - `DELIVERED`, `REJECTED` and `PAYMENT_FAILED` are added to the four mandatory order states. Customer cancellation, partial refunds, tips, taxes, delivery fees and multiple restaurants per order are out of scope.
-- Grafana Tempo is the mandatory distributed tracing backend for Case 6.
+- Distributed tracing is mandatory for Case 6. Grafana Tempo is the primary trace store; the Collector sends the same traces to Jaeger, used as the trace inspector.
 - TTLs, timeouts and performance targets are acceptance criteria, not measured results.
 
 ## 2. Domain Schemas
@@ -648,7 +648,7 @@ The system SHALL expose correlated logs and distributed traces across the order 
 #### Scenario: Trace an order across participating services
 
 - **WHEN** an order is created and processed through Payments, Restaurant Service and Delivery
-- **THEN** structured logs from every participating service contain the same orderId and workflow correlationId, and Tempo exposes HTTP, publication and consumption spans linked through propagated trace context.
+- **THEN** structured logs from every participating service contain the same orderId and workflow correlationId, and Tempo and Jaeger expose HTTP, publication and consumption spans linked through propagated trace context; searching spans by `eatsnow.correlation_id` returns every trace of the order.
 
 #### Scenario: Investigate an ambiguous payment outcome
 
@@ -668,12 +668,12 @@ This section defines the observable contract for Feature 5. For Case 6, distribu
 
 | Signal | Producer | Transport | Backend |
 | --- | --- | --- | --- |
-| Traces | OpenTelemetry SDK in every service, including the API Gateway | OTLP to the OpenTelemetry Collector | Grafana Tempo |
-| Logs | Structured JSON written to stdout by every service | OpenTelemetry Collector reads container logs | Grafana Loki |
+| Traces | OpenTelemetry SDK in every service, including the API Gateway | OTLP to the OpenTelemetry Collector | Grafana Tempo (primary store) and Jaeger (trace inspector, UI on port 16686) |
+| Logs | Structured JSON written to stdout by every service | Grafana Alloy reads the services' container logs through the Docker API; `service` and `level` become labels | Grafana Loki |
 | Metrics | Micrometer at `/actuator/prometheus` on each service's management port; RabbitMQ Prometheus plugin; PostgreSQL and Redis exporters | Prometheus scrape every 15 seconds | Prometheus |
 | Dashboards and alerts | Grafana with Tempo, Loki and Prometheus data sources | — | Grafana |
 
-The management port is not routed by the API Gateway. Grafana links Loki logs to Tempo by `traceId` and Tempo traces back to Loki by `traceId`.
+The management port is not routed by the API Gateway. Grafana links Loki logs to Tempo by `traceId` and Tempo traces back to Loki by `traceId`. Every HTTP response from a business service carries `X-Trace-Id` with the trace id of the request (only the random identifier; through the Gateway it is the same trace), so a response seen in a client can be opened directly in Jaeger or Tempo.
 
 ### 6.2 Structured log schema
 
@@ -706,6 +706,7 @@ Example:
 - The API Gateway starts or continues a trace from a valid `traceparent` and forwards it to the target service.
 - Every outbox entry stores the `traceparent` of the transaction that created it. The relay creates a `publish <messageType>` producer span as a child of that context and writes it to the envelope.
 - Each consumer extracts `traceparent` and creates a `consume <messageType>` consumer span as its child, so one order workflow appears as a single trace across services.
+- Every `publish` and `consume` span carries the envelope's `eatsnow.order_id` and `eatsnow.correlation_id` attributes, as does the HTTP span of `POST /orders`.
 - Later restaurant and driver HTTP actions start their own traces. Their spans carry `eatsnow.order_id` and `eatsnow.correlation_id` attributes and a span link to the stored workflow trace context.
 - Payment provider and email provider calls are client spans with `eatsnow.order_id` and the outcome, but no tokens or addresses.
 - Sampling is parent-based, always on (100%) in the Wave 2 environment so every order can be traced. Any lower production ratio must be recorded in an ADR.
@@ -754,7 +755,7 @@ Grafana provides at least these dashboards: Order flow (creations, transitions, 
 
 1. Start from the `orderId` or the `X-Correlation-ID` returned to the customer.
 2. In Grafana, query Loki with `{service=~".+"} | json | orderId="<orderId>"` to list every log line of the workflow in time order.
-3. Open the `traceId` from the creation log in Tempo to see the HTTP, publication and consumption spans; follow span links for restaurant and driver actions.
+3. Open the `traceId` from the creation log (or the `X-Trace-Id` of the creation response) in Jaeger or Tempo to see the HTTP, publication and consumption spans. To see every trace of the order, including restaurant and driver actions, search spans by the tag `eatsnow.correlation_id=<correlationId>`.
 4. Determine the payment outcome from the Payments log lines and `paymentStatus`:
    - `AUTHORIZED`: the provider confirmed the charge.
    - `FAILED`: definitive refusal; no charge exists.
@@ -779,4 +780,4 @@ Wave 2 results are valid only with this evidence, recorded in the repository:
 | 2 | Downstream outage, Redis fallback, price change, catalog load | HTTP responses, cache metrics, k6 results |
 | 3 | Restaurant outage, broker outage, idempotency, lost payment response, order load | 202 responses, outbox metrics, Payments logs, k6 results |
 | 4 | State progression, completion, reordering, duplicates, refund, driver wait and concurrency, notifications | Order state history, consumer metrics, Notification records |
-| 5 | Order trace, payment investigation, DLQ/outbox alerts | Tempo trace, Loki query results, fired alerts |
+| 5 | Order trace, payment investigation, DLQ/outbox alerts | Jaeger/Tempo traces, Loki query results, fired alerts |

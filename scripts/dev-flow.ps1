@@ -79,13 +79,19 @@ if ($Scenario -eq "Happy") {
 
 Step "3. Customer: quote (signed by Catalog) and order (payment token: $PaymentToken)"
 $quote = Api Post "/api/v1/quotes" $customer @{ restaurantId = $BistroId; items = @(@{ menuItemId = $PastaId; quantity = 1 }) } -Idempotent
-$receipt = Api Post "/api/v1/orders" $customer @{
-    quoteToken = $quote.quoteToken
-    deliveryAddress = @{ line1 = "123 Example Street"; city = "Medellin" }
-    paymentMethodToken = $PaymentToken
-} -Idempotent
+# Invoke-WebRequest (not Api) to read the X-Trace-Id response header as well.
+$orderResponse = Invoke-WebRequest -Method Post -Uri "$Gateway/api/v1/orders" -UseBasicParsing -ContentType "application/json" `
+    -Headers ($customer + @{ "Idempotency-Key" = [guid]::NewGuid().ToString(); "X-Correlation-ID" = [guid]::NewGuid().ToString() }) `
+    -Body (@{
+        quoteToken = $quote.quoteToken
+        deliveryAddress = @{ line1 = "123 Example Street"; city = "Medellin" }
+        paymentMethodToken = $PaymentToken
+    } | ConvertTo-Json -Depth 6 -Compress)
+$receipt = $orderResponse.Content | ConvertFrom-Json
 $orderId = $receipt.orderId
-Write-Host "   202 Accepted  orderId=$orderId  correlationId=$($receipt.correlationId)"
+$correlationId = $receipt.correlationId
+$traceId = $orderResponse.Headers["X-Trace-Id"]
+Write-Host "   202 Accepted  orderId=$orderId  correlationId=$correlationId  traceId=$traceId"
 
 Step "4. Payments authorizes the charge; the restaurant inbox receives the order"
 WaitUntil "payment AUTHORIZED" { $o = ShowOrder $customer $orderId; if ($o.paymentStatus -eq "AUTHORIZED") { $o } } 90 | Out-Null
@@ -125,6 +131,10 @@ if ($Scenario -eq "Reject") {
 }
 
 Step "Done"
-Write-Host "Emails sent to the customer:  http://localhost:8025   (Mailpit)"
-Write-Host "Investigate in Grafana:       http://localhost:3000 -> Explore -> Loki"
+# Every trace of this order (creation, restaurant decisions, driver actions) carries eatsnow.correlation_id.
+$tags = [uri]::EscapeDataString("{`"eatsnow.correlation_id`":`"$correlationId`"}")
+Write-Host "Order creation trace (Jaeger):  http://localhost:16686/trace/$traceId"
+Write-Host "Whole order lifecycle (Jaeger): http://localhost:16686/search?service=orders&tags=$tags&limit=50"
+Write-Host "Emails sent to the customer:    http://localhost:8025   (Mailpit)"
+Write-Host "Investigate in Grafana:         http://localhost:3000 -> Explore -> Loki"
 Write-Host "  {service=~`".+`"} | json | orderId=`"$orderId`""

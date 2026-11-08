@@ -53,6 +53,7 @@ public class EnvelopeConsumer {
         String operation = "consume " + env.messageType();
 
         Span span = trace.startSpan(env.traceparent(), operation, Span.Kind.CONSUMER);
+        TraceSupport.tagWorkflow(span, env.orderId(), env.correlationId());
         try (Tracer.SpanInScope ignored = trace.scope(span)) {
             LogContext.workflow(env.orderId(), env.correlationId());
             MDC.put(LogContext.MESSAGE_ID, env.messageId().toString());

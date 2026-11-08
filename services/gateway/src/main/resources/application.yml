@@ -42,7 +42,7 @@ spring:
             allowed-origins: ${WEB_ORIGINS:http://localhost:5173}
             allowed-methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
             allowed-headers: "*"
-            exposed-headers: [X-Correlation-ID, Location, Retry-After]
+            exposed-headers: [X-Correlation-ID, X-Trace-Id, Location, Retry-After]
             max-age: 3600
       routes:
         # Public: the OIDC provider (Spring Authorization Server) and its login, registration and activation

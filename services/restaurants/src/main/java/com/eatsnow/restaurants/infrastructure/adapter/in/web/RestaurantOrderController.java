@@ -4,6 +4,7 @@ import com.eatsnow.common.domain.exception.ForbiddenException;
 import com.eatsnow.common.domain.exception.InvalidRequestException;
 import com.eatsnow.common.domain.model.PageResult;
 import com.eatsnow.common.web.dto.PaginatedResponseDto;
+import com.eatsnow.messaging.tracing.TraceSupport;
 import com.eatsnow.restaurants.domain.model.RestaurantOrder;
 import com.eatsnow.restaurants.domain.model.RestaurantOrderStatus;
 import com.eatsnow.restaurants.domain.port.in.DecideRestaurantOrderUseCase;
@@ -40,12 +41,14 @@ public class RestaurantOrderController {
     private final GetRestaurantOrdersQuery queries;
     private final DecideRestaurantOrderUseCase decisions;
     private final ObjectMapper objectMapper;
+    private final TraceSupport trace;
 
     public RestaurantOrderController(GetRestaurantOrdersQuery queries, DecideRestaurantOrderUseCase decisions,
-                                     ObjectMapper objectMapper) {
+                                     ObjectMapper objectMapper, TraceSupport trace) {
         this.queries = queries;
         this.decisions = decisions;
         this.objectMapper = objectMapper;
+        this.trace = trace;
     }
 
     @GetMapping
@@ -97,6 +100,8 @@ public class RestaurantOrderController {
         RestaurantOrder result = action.apply(new DecideRestaurantOrderUseCase.Command(restaurantId(request),
                 user.userId(), orderId, expectedVersion, reason, idempotencyKey, request.getRequestURI(),
                 canonicalJson(body)));
+        // Spec 6.3: this action starts its own trace; tag it with the stored workflow correlation id.
+        trace.tagCurrentWorkflow(result.orderId(), result.correlationId());
         return ResponseEntity.ok(RestaurantOrderResponseDto.fromDomain(result));
     }
 

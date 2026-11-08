@@ -40,3 +40,10 @@ datasources:
         datasourceUid: prometheus
       nodeGraph:
         enabled: true
+
+  # Same traces as Tempo (the Collector sends to both); lets Grafana open traces from the Jaeger store too.
+  - name: Jaeger
+    uid: jaeger
+    type: jaeger
+    access: proxy
+    url: http://jaeger:16686

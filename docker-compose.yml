@@ -93,14 +93,33 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.114.0
     command: ["--config=/etc/otelcol/config.yaml"]
-    user: "0:0"   # needed to read /var/lib/docker/containers
     volumes:
       - ./infra/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
     ports:
       - "4317:4317"   # OTLP gRPC
       - "4318:4318"   # OTLP HTTP
-    depends_on: [tempo, loki]
+    depends_on: [tempo, jaeger]
+    networks: [eatsnow]
+
+  # Log shipper (spec 6.1): reads the services' JSON logs through the Docker API and pushes them to Loki.
+  # The Docker API works the same on Docker Desktop (Windows, macOS) and Linux, unlike reading
+  # /var/lib/docker/containers, which is empty from a container on Docker Desktop.
+  alloy:
+    image: grafana/alloy:v1.20.1
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "/etc/alloy/config.alloy"]
+    user: "0:0"   # needed to read the Docker socket
+    volumes:
+      - ./infra/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on: [loki]
+    networks: [eatsnow]
+
+  # Trace inspector (ADR 003): receives the same OTLP traces as Tempo from the Collector. In-memory storage:
+  # traces are kept while the container runs, which is enough to inspect demo and test runs.
+  jaeger:
+    image: jaegertracing/jaeger:2.22.0
+    ports:
+      - "16686:16686" # Jaeger UI
     networks: [eatsnow]
 
   tempo:
