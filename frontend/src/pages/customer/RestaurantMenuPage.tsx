@@ -68,7 +68,7 @@ export const RestaurantMenuPage: React.FC = () => {
         { line1, city, instructions: instructions || undefined },
         paymentToken
       )
-      navigate(`/orders/${created.data.orderId}`, { state: { traceId: created.traceId } })
+      navigate(`/orders/${created.data.orderId}`)
     } catch (err) {
       setError(describeError(err))
       setSubmitting(false)

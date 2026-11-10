@@ -23,6 +23,12 @@ export default defineConfig({
         target: 'http://localhost:8090',
         changeOrigin: true,
       },
+      // Jaeger query API (no CORS): finds the creation trace of an order for the Traceability card.
+      '/jaeger-api': {
+        target: 'http://localhost:16686',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/jaeger-api/, '/api'),
+      },
     },
   },
 })
