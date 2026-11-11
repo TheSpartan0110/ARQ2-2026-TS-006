@@ -1,441 +1,185 @@
 import React, { useState } from 'react'
-import { Navigate } from 'react-router-dom'
-import {
-  ArchiCard,
-  ArchiCardHeader,
-  ArchiCardTitle,
-  ArchiCardDescription,
-  ArchiCardContent,
-  ArchiButton,
-  ArchiTextField,
-  ArchiBadge,
-  ArchiAlert,
-} from '../components/ui'
+import { Check, CreditCard, Edit3, Plus, Trash2 } from 'lucide-react'
+import { ArchiAlert, ArchiButton, ArchiCard, ArchiTextField } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
-import {
-  Shield,
-  Edit3,
-  Key,
-  Clock,
-  Fingerprint,
-  Copy,
-  Check,
-  Sparkles,
-  RefreshCw,
-  Building2,
-  Bike,
-  User,
-} from 'lucide-react'
+import { catalogApi } from '../services/api/eatsnowApi'
+import { usePolling } from '../hooks/usePolling'
+import { PageContainer, PageHeader } from '../components/app/PageHeader'
+import { SANDBOX_CARDS, cardLabel, loadWallet, saveWallet, type PaymentCard } from '../services/wallet'
+import type { Role } from '../types/auth'
 
-export const ProfilePage: React.FC = () => {
-  const { profile, token, isLoading, updateDisplayName, refreshProfile } = useAuth()
-  const [editingName, setEditingName] = useState(false)
-  const [nameInput, setNameInput] = useState('')
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [successMsg, setSuccessMsg] = useState<string | null>(null)
-  const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [copiedToken, setCopiedToken] = useState(false)
-  const [copiedId, setCopiedId] = useState(false)
-  const [inspectorTab, setInspectorTab] = useState<'claims' | 'header' | 'raw'>('claims')
+const ROLE_LABEL: Record<Role, string> = {
+  USER: 'Customer',
+  RESTAURANT: 'Restaurant',
+  DRIVER: 'Driver',
+  ADMIN: 'Administrator',
+}
 
-  if (isLoading) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-          <span className="text-sm text-slate-500 font-semibold tracking-wide">
-            Hydrating authentication session...
-          </span>
-        </div>
-      </div>
-    )
+const inputClass =
+  'w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20'
+
+/** Saved cards of a customer (see services/wallet.ts). */
+const PaymentMethods: React.FC<{ profileId: string }> = ({ profileId }) => {
+  const [cards, setCards] = useState<PaymentCard[]>(() => loadWallet(profileId))
+  const available = SANDBOX_CARDS.filter((card) => !cards.some((c) => c.token === card.token))
+  const [toAdd, setToAdd] = useState('')
+
+  const update = (next: PaymentCard[]) => {
+    setCards(next)
+    saveWallet(profileId, next)
   }
-
-  if (!token || !profile) {
-    return <Navigate to="/login" replace />
+  const add = () => {
+    const card = SANDBOX_CARDS.find((c) => c.token === toAdd)
+    if (card) update([...cards, card])
+    setToAdd('')
   }
-
-  // Parse JWT payload safely
-  let decodedPayload: Record<string, unknown> = {}
-  let decodedHeader: Record<string, unknown> = {}
-  try {
-    const parts = token.split('.')
-    if (parts.length === 3) {
-      decodedHeader = JSON.parse(atob(parts[0]))
-      decodedPayload = JSON.parse(atob(parts[1]))
-    }
-  } catch {
-    // ignore parse error
-  }
-
-  const handleStartEdit = () => {
-    setNameInput(profile.displayName)
-    setEditingName(true)
-    setSuccessMsg(null)
-    setErrorMsg(null)
-  }
-
-  const handleSaveName = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!nameInput.trim()) return
-
-    setIsUpdating(true)
-    setErrorMsg(null)
-    setSuccessMsg(null)
-    try {
-      await updateDisplayName(nameInput.trim())
-      setSuccessMsg('Display name updated successfully! (Verified via Idempotency-Key)')
-      setEditingName(false)
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Failed to update name')
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  const handleRefresh = async () => {
-    setIsRefreshing(true)
-    try {
-      await refreshProfile()
-    } finally {
-      setIsRefreshing(false)
-    }
-  }
-
-  const handleCopyToken = () => {
-    if (!token) return
-    navigator.clipboard.writeText(token)
-    setCopiedToken(true)
-    setTimeout(() => setCopiedToken(false), 2000)
-  }
-
-  const handleCopyId = () => {
-    if (!profile?.id) return
-    navigator.clipboard.writeText(profile.id)
-    setCopiedId(true)
-    setTimeout(() => setCopiedId(false), 2000)
-  }
-
-  const expDate = decodedPayload.exp
-    ? new Date(Number(decodedPayload.exp) * 1000)
-    : null
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 flex flex-col gap-8">
-      {/* Top Banner / Hero Profile Card */}
-      <div className="relative rounded-3xl bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 p-6 sm:p-8 text-white shadow-xl shadow-emerald-950/15 overflow-hidden">
-        {/* Background ambient pattern */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-10 -left-10 w-64 h-64 bg-teal-400/20 rounded-full blur-2xl pointer-events-none" />
+    <ArchiCard>
+      <h2 className="font-bold text-slate-900">Payment methods</h2>
+      <p className="text-xs text-slate-500 mb-4">
+        Cards of the payment provider's test environment: each one behaves differently, so you can try every payment
+        outcome. No real card is charged.
+      </p>
 
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div className="flex items-center gap-4 sm:gap-5">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center font-extrabold text-2xl sm:text-3xl shadow-md text-white shrink-0">
+      {cards.length === 0 && <p className="text-sm text-slate-500 mb-3">You have no saved cards.</p>}
+      <ul className="flex flex-col gap-2 mb-4">
+        {cards.map((card) => (
+          <li
+            key={card.token}
+            className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5"
+          >
+            <div className="flex items-center gap-3 min-w-0">
+              <CreditCard className="w-5 h-5 text-slate-500 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900">{cardLabel(card)}</p>
+                <p className="text-xs text-slate-500">{card.behavior}</p>
+              </div>
+            </div>
+            <ArchiButton
+              variant="ghost"
+              size="sm"
+              aria-label={`Remove ${cardLabel(card)}`}
+              onPress={() => update(cards.filter((c) => c.token !== card.token))}
+              leftIcon={<Trash2 className="w-4 h-4 text-slate-400" />}
+            >
+              <span className="sr-only">Remove</span>
+            </ArchiButton>
+          </li>
+        ))}
+      </ul>
+
+      {available.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <select className={inputClass} value={toAdd} onChange={(e) => setToAdd(e.target.value)}>
+            <option value="">Add a card…</option>
+            {available.map((card) => (
+              <option key={card.token} value={card.token}>
+                {cardLabel(card)} · {card.behavior}
+              </option>
+            ))}
+          </select>
+          <ArchiButton isDisabled={!toAdd} onPress={add} leftIcon={<Plus className="w-4 h-4" />}>
+            Add
+          </ArchiButton>
+        </div>
+      )}
+    </ArchiCard>
+  )
+}
+
+export const ProfilePage: React.FC = () => {
+  const { profile, token, updateDisplayName } = useAuth()
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const isRestaurant = profile?.roles.includes('RESTAURANT') ?? false
+  const restaurants = usePolling(() => catalogApi.restaurants(token!), 60_000, isRestaurant)
+
+  if (!profile) return null
+  const restaurantName = restaurants.data?.items.find((r) => r.id === profile.restaurantId)?.name
+
+  const save = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim()) return
+    setSaving(true)
+    setError(null)
+    try {
+      await updateDisplayName(name.trim())
+      setEditing(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'The name could not be saved')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <PageContainer>
+      <PageHeader title="My account" />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <ArchiCard>
+          <div className="flex items-center gap-4 mb-5">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-extrabold text-xl flex items-center justify-center shrink-0">
               {profile.displayName.charAt(0).toUpperCase()}
             </div>
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-2.5 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                  {profile.displayName}
-                </h1>
-                <ArchiBadge variant="success" className="bg-emerald-400/20 border-emerald-300/40 text-emerald-100">
-                  Active
-                </ArchiBadge>
-              </div>
-              <p className="text-emerald-100/90 text-sm font-medium">{profile.email}</p>
-              <div className="flex items-center gap-2 mt-1">
-                {profile.roles.map((role) => (
-                  <span
-                    key={role}
-                    className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-md bg-white/15 border border-white/20 uppercase"
-                  >
-                    {role}
-                  </span>
-                ))}
-              </div>
+            <div className="min-w-0">
+              <p className="text-lg font-bold text-slate-900 truncate">{profile.displayName}</p>
+              <p className="text-sm text-slate-500 truncate">{profile.email}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5 sm:self-center">
-            <ArchiButton
-              variant="glass"
-              size="sm"
-              onPress={handleRefresh}
-              isLoading={isRefreshing}
-              leftIcon={<RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />}
-            >
-              Sync Profile
-            </ArchiButton>
+          {error && <ArchiAlert variant="error" title="The name was not saved" className="mb-4">{error}</ArchiAlert>}
 
-            {!editingName && (
-              <ArchiButton
-                variant="glass"
-                size="sm"
-                onPress={handleStartEdit}
-                leftIcon={<Edit3 className="w-3.5 h-3.5" />}
-              >
-                Edit Display Name
-              </ArchiButton>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {successMsg && <ArchiAlert variant="success" title="Profile Saved">{successMsg}</ArchiAlert>}
-      {errorMsg && <ArchiAlert variant="error" title="Action Failed">{errorMsg}</ArchiAlert>}
-
-      {/* Main Bento Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        
-        {/* Left Column: Profile Details & Updates (7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-6">
-          
-          {/* In-place Name Editor */}
-          {editingName && (
-            <ArchiCard className="border-emerald-200/90 bg-emerald-50/40 shadow-md">
-              <ArchiCardHeader>
-                <div className="flex items-center gap-2 text-emerald-800">
-                  <Sparkles className="w-4 h-4 text-emerald-600" />
-                  <ArchiCardTitle className="text-lg">Edit Display Name</ArchiCardTitle>
+          {editing ? (
+            <form onSubmit={save} className="flex flex-col gap-3">
+              <ArchiTextField label="Name" value={name} onChange={setName} maxLength={100} isRequired />
+              <div className="flex justify-end gap-2">
+                <ArchiButton type="button" variant="ghost" size="sm" onPress={() => setEditing(false)} isDisabled={saving}>
+                  Cancel
+                </ArchiButton>
+                <ArchiButton type="submit" size="sm" isLoading={saving} leftIcon={<Check className="w-3.5 h-3.5" />}>
+                  Save
+                </ArchiButton>
+              </div>
+            </form>
+          ) : (
+            <dl className="text-sm divide-y divide-slate-100">
+              <div className="py-2 flex justify-between gap-4">
+                <dt className="text-slate-500">Account type</dt>
+                <dd className="font-semibold text-slate-900">{profile.roles.map((r) => ROLE_LABEL[r]).join(', ')}</dd>
+              </div>
+              {isRestaurant && (
+                <div className="py-2 flex justify-between gap-4">
+                  <dt className="text-slate-500">Restaurant</dt>
+                  <dd className="font-semibold text-slate-900">{restaurantName ?? '…'}</dd>
                 </div>
-                <ArchiCardDescription>
-                  Mutates <code className="bg-white/80 px-1 py-0.5 rounded font-mono text-xs">PATCH /api/v1/profiles/me</code>. An <code className="bg-white/80 px-1 py-0.5 rounded font-mono text-xs">Idempotency-Key</code> UUID is generated automatically.
-                </ArchiCardDescription>
-              </ArchiCardHeader>
-
-              <ArchiCardContent>
-                <form onSubmit={handleSaveName} className="flex flex-col gap-4">
-                  <ArchiTextField
-                    label="Display Name"
-                    placeholder="e.g. Alex Morgan"
-                    value={nameInput}
-                    onChange={setNameInput}
-                    maxLength={100}
-                    description={`${nameInput.length}/100 characters`}
-                    isRequired
-                  />
-
-                  <div className="flex items-center justify-end gap-2.5 pt-2">
-                    <ArchiButton
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onPress={() => setEditingName(false)}
-                      isDisabled={isUpdating}
-                    >
-                      Cancel
-                    </ArchiButton>
-                    <ArchiButton
-                      type="submit"
-                      variant="primary"
-                      size="sm"
-                      isLoading={isUpdating}
-                      leftIcon={<Check className="w-3.5 h-3.5" />}
-                    >
-                      Save with Idempotency
-                    </ArchiButton>
-                  </div>
-                </form>
-              </ArchiCardContent>
-            </ArchiCard>
+              )}
+              <div className="py-2 flex justify-between gap-4">
+                <dt className="text-slate-500">Status</dt>
+                <dd className="font-semibold text-emerald-700">{profile.active ? 'Active' : 'Inactive'}</dd>
+              </div>
+              <div className="pt-3">
+                <ArchiButton
+                  variant="outline"
+                  size="sm"
+                  onPress={() => {
+                    setName(profile.displayName)
+                    setEditing(true)
+                  }}
+                  leftIcon={<Edit3 className="w-3.5 h-3.5" />}
+                >
+                  Change name
+                </ArchiButton>
+              </div>
+            </dl>
           )}
+        </ArchiCard>
 
-          {/* Account Identifiers Card */}
-          <ArchiCard>
-            <ArchiCardHeader>
-              <ArchiCardTitle className="text-lg flex items-center gap-2">
-                <User className="w-5 h-5 text-emerald-600" />
-                Account Attributes & Scope
-              </ArchiCardTitle>
-              <ArchiCardDescription>
-                Persistent domain identifiers isolated in the PostgreSQL identity schema.
-              </ArchiCardDescription>
-            </ArchiCardHeader>
-
-            <ArchiCardContent className="flex flex-col gap-4">
-              {/* Profile UUID */}
-              <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex items-center justify-between gap-3">
-                <div className="flex flex-col gap-1 min-w-0">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <Fingerprint className="w-3.5 h-3.5 text-slate-400" />
-                    Profile UUID (JWT Sub)
-                  </span>
-                  <span className="text-xs font-mono font-semibold text-slate-800 truncate">
-                    {profile.id}
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyId}
-                  className="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition-colors cursor-pointer shrink-0"
-                  title="Copy Profile UUID"
-                >
-                  {copiedId ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                </button>
-              </div>
-
-              {/* Roles */}
-              <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex flex-col gap-2">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-slate-400" />
-                  Assigned RBAC Authorities
-                </span>
-                <div className="flex flex-wrap gap-2">
-                  {profile.roles.map((role) => (
-                    <ArchiBadge
-                      key={role}
-                      variant={
-                        role === 'ADMIN'
-                          ? 'admin'
-                          : role === 'RESTAURANT'
-                          ? 'restaurant'
-                          : role === 'DRIVER'
-                          ? 'driver'
-                          : 'user'
-                      }
-                      className="text-xs px-3 py-1"
-                    >
-                      ROLE_{role}
-                    </ArchiBadge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Linked Domain Entities */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex flex-col gap-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <Building2 className="w-3.5 h-3.5 text-amber-500" />
-                    Restaurant Link
-                  </span>
-                  <span className="text-xs font-mono text-slate-700 truncate">
-                    {profile.restaurantId ? profile.restaurantId : 'None (Customer / Driver)'}
-                  </span>
-                </div>
-
-                <div className="p-4 bg-slate-50/80 border border-slate-200/80 rounded-2xl flex flex-col gap-1">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                    <Bike className="w-3.5 h-3.5 text-emerald-500" />
-                    Driver Link
-                  </span>
-                  <span className="text-xs font-mono text-slate-700 truncate">
-                    {profile.driverId ? profile.driverId : 'None (Customer / Merchant)'}
-                  </span>
-                </div>
-              </div>
-            </ArchiCardContent>
-          </ArchiCard>
-
-        </div>
-
-        {/* Right Column: Live JWT Cryptographic Inspector (5 cols) */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
-          <ArchiCard variant="dark">
-            <ArchiCardHeader className="border-slate-800 pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Key className="w-5 h-5 text-emerald-400" />
-                  <ArchiCardTitle className="text-white text-base font-bold">
-                    JWT Inspector
-                  </ArchiCardTitle>
-                </div>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  RS256 Verified
-                </div>
-              </div>
-              <ArchiCardDescription className="text-slate-400 text-xs">
-                Real-time cryptographic claims issued by Identity Service.
-              </ArchiCardDescription>
-            </ArchiCardHeader>
-
-            <ArchiCardContent className="flex flex-col gap-4">
-              {/* Token Expiry Pill */}
-              <div className="p-3 bg-slate-800/80 rounded-xl border border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
-                <span className="flex items-center gap-1.5 text-slate-400">
-                  <Clock className="w-3.5 h-3.5 text-emerald-400" />
-                  Token Expires:
-                </span>
-                <span className="font-mono font-semibold text-emerald-300">
-                  {expDate ? expDate.toLocaleTimeString() : '15 minutes'}
-                </span>
-              </div>
-
-              {/* Tab Selector */}
-              <div className="flex p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab('claims')}
-                  className={`flex-1 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    inspectorTab === 'claims' ? 'bg-slate-800 text-emerald-300 shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Payload Claims
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab('header')}
-                  className={`flex-1 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    inspectorTab === 'header' ? 'bg-slate-800 text-emerald-300 shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Header
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setInspectorTab('raw')}
-                  className={`flex-1 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                    inspectorTab === 'raw' ? 'bg-slate-800 text-emerald-300 shadow-xs' : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  Raw Token
-                </button>
-              </div>
-
-              {/* Tab Content */}
-              <div className="relative">
-                <div className="bg-slate-950 rounded-xl p-3 border border-slate-800/80 max-h-56 overflow-y-auto text-xs font-mono leading-relaxed">
-                  {inspectorTab === 'claims' && (
-                    <pre className="text-emerald-400/95 whitespace-pre-wrap">
-                      {JSON.stringify(decodedPayload, null, 2)}
-                    </pre>
-                  )}
-                  {inspectorTab === 'header' && (
-                    <pre className="text-sky-400/95 whitespace-pre-wrap">
-                      {JSON.stringify(decodedHeader, null, 2)}
-                    </pre>
-                  )}
-                  {inspectorTab === 'raw' && (
-                    <div className="text-slate-300 break-all select-all text-[11px]">
-                      {token}
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleCopyToken}
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer shadow-xs border border-slate-700"
-                  title="Copy token to clipboard"
-                >
-                  {copiedToken ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1">
-                <span>Key ID: <code className="text-slate-400">{String(decodedHeader.kid || 'eatsnow-identity-key-1')}</code></span>
-                <span>Issuer: <code className="text-slate-400">{String(decodedPayload.iss || 'eatsnow-identity')}</code></span>
-              </div>
-            </ArchiCardContent>
-          </ArchiCard>
-        </div>
-
+        {profile.roles.includes('USER') && <PaymentMethods profileId={profile.id} />}
       </div>
-    </div>
+    </PageContainer>
   )
 }

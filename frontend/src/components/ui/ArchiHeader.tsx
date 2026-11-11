@@ -1,10 +1,18 @@
 import React from 'react'
-import { UtensilsCrossed, LogOut, User, Sparkles, Store, ReceiptText, ChefHat, Bike } from 'lucide-react'
+import { UtensilsCrossed, LogOut, User, Store, ReceiptText, ChefHat, Bike } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { ArchiButton } from './ArchiButton'
 import { ArchiBadge } from './ArchiBadge'
 import { useAuth } from '../../context/AuthContext'
 import { cn } from '../../utils/cn'
+import type { Role } from '../../types/auth'
+
+const ROLE_LABEL: Record<Role, string> = {
+  USER: 'Customer',
+  RESTAURANT: 'Restaurant',
+  DRIVER: 'Driver',
+  ADMIN: 'Admin',
+}
 
 export const ArchiHeader: React.FC = () => {
   const { profile, token, logout } = useAuth()
@@ -44,18 +52,10 @@ export const ArchiHeader: React.FC = () => {
             <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 border-2 border-white" />
           </div>
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                EatsNow
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100/90 text-emerald-800 border border-emerald-200/80 flex items-center gap-1 shadow-2xs">
-                <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
-                Case 6
-              </span>
-            </div>
-            <span className="text-[11px] text-slate-400 font-medium tracking-tight">
-              Order Orchestration Platform
+            <span className="font-extrabold text-xl tracking-tight text-slate-900">
+              Eats<span className="text-emerald-600">Now</span>
             </span>
+            <span className="text-[11px] text-slate-500 font-medium tracking-tight">Food, delivered fast</span>
           </div>
         </Link>
 
@@ -105,7 +105,7 @@ export const ArchiHeader: React.FC = () => {
                         }
                         className="py-0 px-1.5 text-[9px]"
                       >
-                        {role}
+                        {ROLE_LABEL[role]}
                       </ArchiBadge>
                     ))}
                   </div>

@@ -38,7 +38,7 @@ export const ordersApi = {
       idempotent: true,
     }),
 
-  list: (token: string) => api<Page<Order>>('/api/v1/orders?limit=50', { token }),
+  list: (token: string, limit = 10) => api<Page<Order>>(`/api/v1/orders?limit=${limit}`, { token }),
 
   get: (token: string, orderId: string) => api<Order>(`/api/v1/orders/${orderId}`, { token }),
 

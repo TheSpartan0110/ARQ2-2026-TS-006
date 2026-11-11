@@ -23,7 +23,7 @@ param(
     [ValidateSet("catalog-baseline", "catalog-mixed", "order-create", "all")]
     [string]$Scenario = "all",
     [string]$Duration = "60s",
-    [string]$Email = "alex@example.test",         # seeded demo customer
+    [string]$Email = "loadtest@example.test",     # synthetic customer of the load runs (Identity V3), not the demo one
     [string]$Password = "password123",
     [switch]$KeepStopped
 )

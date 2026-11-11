@@ -5,7 +5,6 @@ import type { Role } from '../types/auth'
 import { LoginPage } from '../pages/LoginPage'
 import { CallbackPage } from '../pages/CallbackPage'
 import { ProfilePage } from '../pages/ProfilePage'
-import { JwksViewerPage } from '../pages/JwksViewerPage'
 import { RestaurantsPage } from '../pages/customer/RestaurantsPage'
 import { RestaurantMenuPage } from '../pages/customer/RestaurantMenuPage'
 import { MyOrdersPage } from '../pages/customer/MyOrdersPage'
@@ -53,7 +52,6 @@ export const AppRoutes: React.FC = () => {
       <Route path="/driver" element={<RequireRole role="DRIVER"><DriverPage /></RequireRole>} />
 
       <Route path="/profile" element={<RequireRole><ProfilePage /></RequireRole>} />
-      <Route path="/jwks" element={<JwksViewerPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

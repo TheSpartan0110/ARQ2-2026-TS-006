@@ -18,11 +18,4 @@ export const authApi = {
   async updateDisplayName(token: string, displayName: string): Promise<Profile> {
     return api<Profile>('/api/v1/profiles/me', { method: 'PATCH', token, body: { displayName }, idempotent: true })
   },
-
-  /**
-   * Retrieves the public JWKS of the Identity OIDC provider (ADR 005).
-   */
-  async getJwks(): Promise<Record<string, unknown>> {
-    return api<Record<string, unknown>>('/oauth2/jwks')
-  },
 }

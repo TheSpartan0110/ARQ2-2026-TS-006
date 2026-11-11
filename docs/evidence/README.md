@@ -12,7 +12,7 @@ The environment of every load run is recorded automatically in [`load/results/en
 | Docker engine | Docker Desktop 29.9.2, 16 CPUs and 19.2 GB for all containers (services, databases, broker and observability stack on the same machine) |
 | Dataset | 2 restaurants, 5 menu items, 1 driver (seed data) |
 | Load generator | k6 `grafana/k6:0.54.0`, running in the compose network and calling the API Gateway |
-| Authentication | Real OIDC login (authorization code + PKCE) of the synthetic customer `alex@example.test` |
+| Authentication | Real OIDC login (authorization code + PKCE) of a synthetic customer: `alex@example.test` in the recorded run; from now on the dedicated `loadtest@example.test` (Identity V3), so load orders never mix with the demo customer |
 
 ## Performance scenarios (Spec 5)
 
