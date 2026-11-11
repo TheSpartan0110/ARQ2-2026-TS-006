@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, CircleDot } from 'lucide-react'
+import { ArrowLeft, Bike, ChefHat, House, MapPin, Receipt, ThumbsUp } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { catalogApi, ordersApi } from '../../services/api/eatsnowApi'
 import { usePolling } from '../../hooks/usePolling'
@@ -9,18 +9,70 @@ import { ORDER_STATUS, PAYMENT_STATUS, formatDateTime, formatMoney, formatTime, 
 import { cn } from '../../utils/cn'
 import { ArchiAlert, ArchiCard } from '../../components/ui'
 import { StatusPill } from '../../components/app/StatusPill'
-import { PageContainer, PageHeader } from '../../components/app/PageHeader'
-import { TraceLinks } from '../../components/app/TraceLinks'
+import { PageContainer } from '../../components/app/PageHeader'
+import { dishEmoji } from '../../utils/visuals'
 
 /** The mandatory order states of the case, in order (Spec 2.4), plus delivery completion. */
-const STEPS: OrderStatus[] = ['CREATED', 'ACCEPTED', 'PREPARING', 'ON_THE_WAY', 'DELIVERED']
+const STEPS: { status: OrderStatus; icon: React.ElementType }[] = [
+  { status: 'CREATED', icon: Receipt },
+  { status: 'ACCEPTED', icon: ThumbsUp },
+  { status: 'PREPARING', icon: ChefHat },
+  { status: 'ON_THE_WAY', icon: Bike },
+  { status: 'DELIVERED', icon: House },
+]
+
+/** Headline of each order state. */
+const HERO: Record<OrderStatus, { emoji: string; title: string; text: string; color: string }> = {
+  CREATED: {
+    emoji: '🧾',
+    title: 'We received your order',
+    text: 'We are confirming your payment and sending it to the restaurant.',
+    color: 'from-sky-600 via-sky-500 to-cyan-400',
+  },
+  ACCEPTED: {
+    emoji: '👍',
+    title: 'The restaurant accepted your order',
+    text: 'The kitchen will start preparing it in a moment.',
+    color: 'from-emerald-700 via-emerald-600 to-teal-500',
+  },
+  PREPARING: {
+    emoji: '👨‍🍳',
+    title: 'Your food is being prepared',
+    text: 'A driver is assigned to pick it up as soon as it is ready.',
+    color: 'from-orange-600 via-orange-500 to-amber-400',
+  },
+  ON_THE_WAY: {
+    emoji: '🛵',
+    title: 'Your order is on the way',
+    text: 'The driver picked it up and is heading to you.',
+    color: 'from-violet-700 via-violet-600 to-fuchsia-500',
+  },
+  DELIVERED: {
+    emoji: '🎉',
+    title: 'Delivered. Enjoy your meal!',
+    text: 'Thank you for ordering with EatsNow.',
+    color: 'from-emerald-700 via-emerald-600 to-lime-500',
+  },
+  REJECTED: {
+    emoji: '😔',
+    title: 'The restaurant could not take your order',
+    text: 'Your payment is refunded automatically.',
+    color: 'from-slate-700 via-slate-600 to-slate-500',
+  },
+  PAYMENT_FAILED: {
+    emoji: '💳',
+    title: 'Your payment was declined',
+    text: 'The order was not sent to the restaurant and nothing was charged.',
+    color: 'from-rose-700 via-rose-600 to-red-500',
+  },
+}
 
 const PAYMENT_EXPLANATION: Partial<Record<PaymentStatus, string>> = {
   PENDING: 'Your order is saved. The payment is processed in the background; you do not have to wait on this page.',
   UNKNOWN:
     'The payment provider did not answer in time. We are confirming the charge with it; you will never be charged twice.',
-  REFUND_PENDING: 'The restaurant could not take your order. Your refund has been requested.',
-  REFUNDED: 'The restaurant could not take your order. Your payment was refunded.',
+  REFUND_PENDING: 'Your refund has been requested.',
+  REFUNDED: 'Your payment was refunded.',
 }
 
 /** One readable sentence per recorded change. */
@@ -54,126 +106,139 @@ export const OrderTrackingPage: React.FC = () => {
   const o = order.data
   const restaurantName = restaurants.data?.items.find((r) => r.id === o.restaurantId)?.name ?? 'Restaurant'
   const failed = o.status === 'REJECTED' || o.status === 'PAYMENT_FAILED'
-  const currentStep = STEPS.indexOf(o.status)
+  const currentStep = STEPS.findIndex((s) => s.status === o.status)
+  const hero = HERO[o.status]
+  const progress = o.status === 'DELIVERED' ? 100 : (Math.max(currentStep, 0) / (STEPS.length - 1)) * 100
 
   return (
-    <PageContainer>
-      <Link to="/orders" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800 mb-4">
-        <ArrowLeft className="w-4 h-4" /> My orders
-      </Link>
-      <PageHeader
-        title={restaurantName}
-        subtitle={`Placed ${formatDateTime(o.createdAt)} · ${formatMoney(o.total)}`}
-        actions={
-          <>
-            <StatusPill {...ORDER_STATUS[o.status]} />
-            <StatusPill {...PAYMENT_STATUS[o.paymentStatus]} />
-          </>
-        }
-      />
+    <>
+      <section className={`bg-gradient-to-br ${hero.color} text-white transition-colors duration-700`}>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <Link to="/orders" className="inline-flex items-center gap-1 text-sm font-semibold text-white/90 hover:text-white">
+            <ArrowLeft className="w-4 h-4" /> My orders
+          </Link>
+          <div className="flex items-center gap-5 mt-4">
+            <div
+              className={cn(
+                'w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-5xl sm:text-6xl shrink-0',
+                live && 'animate-pulse'
+              )}
+              aria-hidden
+            >
+              {hero.emoji}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-white/80">
+                {restaurantName} · {formatMoney(o.total)}
+              </p>
+              <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">{hero.title}</h1>
+              <p className="text-white/90 mt-1">{hero.text}</p>
+            </div>
+          </div>
 
-      {o.status === 'PAYMENT_FAILED' && (
-        <ArchiAlert variant="error" title="Payment declined" className="mb-4">
-          The payment provider refused the card. The order was not sent to the restaurant and nothing was charged.
-        </ArchiAlert>
-      )}
-      {o.status === 'REJECTED' && (
-        <ArchiAlert variant="warning" title="The restaurant could not take your order" className="mb-4">
-          {PAYMENT_EXPLANATION[o.paymentStatus] ?? 'Your payment is being refunded.'}
-        </ArchiAlert>
-      )}
-      {!failed && PAYMENT_EXPLANATION[o.paymentStatus] && (
-        <ArchiAlert variant={o.paymentStatus === 'UNKNOWN' ? 'warning' : 'info'} className="mb-4">
-          {PAYMENT_EXPLANATION[o.paymentStatus]}
-        </ArchiAlert>
-      )}
+          {!failed && (
+            <div className="mt-8">
+              <div className="relative h-2 rounded-full bg-white/25 overflow-hidden">
+                <div
+                  className="absolute inset-y-0 left-0 rounded-full bg-white transition-all duration-700"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <ol className="grid grid-cols-5 mt-3">
+                {STEPS.map(({ status, icon: Icon }, i) => {
+                  const reached = i <= currentStep || o.status === 'DELIVERED'
+                  return (
+                    <li
+                      key={status}
+                      className={cn(
+                        'flex flex-col items-center text-center gap-1 text-xs sm:text-sm font-semibold',
+                        reached ? 'text-white' : 'text-white/50'
+                      )}
+                    >
+                      <Icon className="w-5 h-5" />
+                      {ORDER_STATUS[status].label}
+                    </li>
+                  )
+                })}
+              </ol>
+            </div>
+          )}
+        </div>
+      </section>
 
-      {/* Progress through the mandatory states */}
-      {!failed && (
-        <ArchiCard className="mb-6">
-          <ol className="grid grid-cols-5 gap-2">
-            {STEPS.map((step, i) => {
-              const done = i < currentStep || o.status === 'DELIVERED'
-              const current = i === currentStep && o.status !== 'DELIVERED'
-              return (
-                <li key={step} className="flex flex-col items-center text-center gap-2">
-                  <div
+      <PageContainer>
+        {PAYMENT_EXPLANATION[o.paymentStatus] && (
+          <ArchiAlert variant={o.paymentStatus === 'UNKNOWN' ? 'warning' : 'info'} className="mb-6">
+            {PAYMENT_EXPLANATION[o.paymentStatus]}
+          </ArchiAlert>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <ArchiCard className="lg:col-span-2">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Order activity</h2>
+              {live && (
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-700">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" /> Live
+                </span>
+              )}
+            </div>
+            <ol className="relative border-l-2 border-slate-200 ml-2 flex flex-col gap-5">
+              {[...(history.data ?? [])].reverse().map((e, i) => (
+                <li key={e.version + e.occurredAt} className="pl-6 relative">
+                  <span
                     className={cn(
-                      'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-colors',
-                      done && 'bg-emerald-500 border-emerald-500 text-white',
-                      current && 'border-emerald-500 text-emerald-600 bg-emerald-50 animate-pulse',
-                      !done && !current && 'border-slate-200 text-slate-300 bg-white'
+                      'absolute -left-[9px] top-0.5 w-4 h-4 rounded-full border-2 border-white',
+                      i === 0 ? 'bg-emerald-500 ring-4 ring-emerald-100' : 'bg-slate-300'
                     )}
-                  >
-                    {done ? <Check className="w-4 h-4" /> : <CircleDot className="w-4 h-4" />}
+                  />
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <span className={cn('text-sm', i === 0 ? 'font-bold text-slate-900' : 'font-semibold text-slate-600')}>
+                      {describeChange(e)}
+                    </span>
+                    <span className="text-xs text-slate-400 tabular-nums">{formatTime(e.occurredAt)}</span>
                   </div>
-                  <span className={cn('text-xs font-semibold', done || current ? 'text-slate-800' : 'text-slate-400')}>
-                    {ORDER_STATUS[step].label}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    <StatusPill {...ORDER_STATUS[e.status]} />
+                    <StatusPill {...PAYMENT_STATUS[e.paymentStatus]} />
+                  </div>
                 </li>
-              )
-            })}
-          </ol>
-        </ArchiCard>
-      )}
+              ))}
+            </ol>
+          </ArchiCard>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <ArchiCard className="lg:col-span-2">
-          <h2 className="font-bold text-slate-900 mb-1">Timeline</h2>
-          <p className="text-xs text-slate-500 mb-4">
-            Every change is caused by an event from another service (payments, restaurant, delivery).
-          </p>
-          <ol className="relative border-l-2 border-slate-100 ml-2 flex flex-col gap-4">
-            {(history.data ?? []).map((e) => (
-              <li key={e.version + e.occurredAt} className="pl-5 relative">
-                <span className="absolute -left-[7px] top-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                <div className="flex flex-wrap items-baseline gap-x-2">
-                  <span className="font-semibold text-slate-900 text-sm">{describeChange(e)}</span>
-                  <span className="text-xs text-slate-400 tabular-nums">{formatTime(e.occurredAt)}</span>
-                </div>
-                <div className="text-xs text-slate-500">
-                  {ORDER_STATUS[e.status].label} · {PAYMENT_STATUS[e.paymentStatus].label} · version {e.version}
-                  {e.causedBy && (
-                    <>
-                      {' '}· event <code className="font-mono">{e.causedBy.slice(0, 8)}</code>
-                    </>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ol>
-          {live && <p className="text-xs text-slate-400 mt-4">Updating automatically…</p>}
-        </ArchiCard>
-
-        <div className="flex flex-col gap-6">
           <ArchiCard>
-            <h2 className="font-bold text-slate-900 mb-2">Items</h2>
+            <h2 className="text-lg font-extrabold text-slate-900 mb-1">Your order</h2>
+            <p className="text-xs text-slate-500 mb-3">Placed {formatDateTime(o.createdAt)}</p>
             <ul className="text-sm divide-y divide-slate-100">
               {o.items.map((i) => (
-                <li key={i.menuItemId} className="py-1.5 flex justify-between gap-2">
-                  <span>{i.quantity} × {i.name}</span>
-                  <span className="tabular-nums">
+                <li key={i.menuItemId} className="py-2 flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="text-xl" aria-hidden>{dishEmoji(i.name)}</span>
+                    <span>
+                      <span className="font-bold text-emerald-700">{i.quantity}×</span> {i.name}
+                    </span>
+                  </span>
+                  <span className="tabular-nums font-semibold">
                     {formatMoney({ amountMinor: i.unitPrice.amountMinor * i.quantity, currency: i.unitPrice.currency })}
                   </span>
                 </li>
               ))}
-              <li className="pt-2 flex justify-between font-bold">
+              <li className="pt-3 flex justify-between text-base font-extrabold">
                 <span>Total</span>
                 <span className="tabular-nums">{formatMoney(o.total)}</span>
               </li>
             </ul>
-            <p className="text-xs text-slate-500 mt-3">
-              Deliver to {o.deliveryAddress.line1}, {o.deliveryAddress.city}
-              {o.deliveryAddress.instructions ? ` (${o.deliveryAddress.instructions})` : ''}
-            </p>
-          </ArchiCard>
-
-          <ArchiCard>
-            <h2 className="font-bold text-slate-900 mb-2">Traceability</h2>
-            <TraceLinks correlationId={o.correlationId} createdAt={o.createdAt} />
+            <div className="mt-4 rounded-2xl bg-slate-50 p-3 text-sm text-slate-700 flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+              <span>
+                {o.deliveryAddress.line1}, {o.deliveryAddress.city}
+                {o.deliveryAddress.instructions ? ` · ${o.deliveryAddress.instructions}` : ''}
+              </span>
+            </div>
           </ArchiCard>
         </div>
-      </div>
-    </PageContainer>
+      </PageContainer>
+    </>
   )
 }
