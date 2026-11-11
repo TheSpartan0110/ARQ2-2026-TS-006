@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, CircleDot } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { catalogApi, ordersApi } from '../../services/api/eatsnowApi'
@@ -33,8 +33,6 @@ function describeChange(e: OrderHistoryEntry): string {
 
 export const OrderTrackingPage: React.FC = () => {
   const { orderId } = useParams<{ orderId: string }>()
-  const location = useLocation()
-  const creationTraceId = (location.state as { traceId?: string } | null)?.traceId ?? null
   const { token } = useAuth()
 
   const order = usePolling(() => ordersApi.get(token!, orderId!), 2_000)
@@ -172,7 +170,7 @@ export const OrderTrackingPage: React.FC = () => {
 
           <ArchiCard>
             <h2 className="font-bold text-slate-900 mb-2">Traceability</h2>
-            <TraceLinks correlationId={o.correlationId} traceId={creationTraceId} />
+            <TraceLinks correlationId={o.correlationId} createdAt={o.createdAt} />
           </ArchiCard>
         </div>
       </div>
