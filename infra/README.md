@@ -43,6 +43,7 @@ Per-service credentials: PostgreSQL user `<schema>_svc` / `<schema>_dev_pw`; Rab
 | Traces | Services -> Collector (OTLP) -> Tempo, 100% sampling | Spec 6.3 |
 | Metrics | Prometheus scrapes `<service>:8081/actuator/prometheus`; adds the `service` label itself | Spec 6.1 / 6.4 |
 | Grafana | Login required; datasources and dashboards provisioned as code; Loki <-> Tempo linked by `traceId` | Spec 6.1 / 6.5 |
+| Dashboards | Folder *EatsNow*: Order flow, Messaging, Payments, Catalog, Service health (Spec 6.4), Load tests (k6 runs) and Infrastructure; JSON in `infra/grafana/dashboards/`, read-only in the UI | Spec 6.4 / 6.7 |
 
 ### Retry flow (per queue)
 
@@ -69,4 +70,4 @@ The consumer counts attempts (header `x-death` or its own) and chooses 5s, 30s, 
 - `*.sh` and config files must keep LF line endings (enforced by `.gitattributes`).
 - Alloy reads logs through `/var/run/docker.sock`, which works on Docker Desktop (Windows, macOS) and Linux. Reading `/var/lib/docker/containers` instead ships nothing on Docker Desktop: that folder lives inside Docker's VM.
 - Alert rules are evaluated by Prometheus (Prometheus UI -> Alerts). There is no Alertmanager yet; Grafana alerting can be wired in step 4.6.
-- Several metrics in `alerts.yml` and the dashboard only appear once the services publish them.
+- Several metrics in `alerts.yml` and the dashboards only appear once the services publish them (counters after their first event).

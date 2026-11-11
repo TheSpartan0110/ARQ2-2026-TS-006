@@ -720,7 +720,7 @@ Metric labels never include orderId, customerId, correlationId or other per-enti
 | Metric | Type | Labels | Purpose |
 | --- | --- | --- | --- |
 | `http_server_requests_seconds` | Histogram | `service`, `method`, `uri`, `status` | Latency and error rate per route. |
-| `eatsnow_orders_created_total` | Counter | — | Accepted orders (202). |
+| `eatsnow_orders_total` | Counter | — | Accepted orders (202). Registered as `eatsnow.orders.created`; the Prometheus client drops the reserved `_created` suffix. |
 | `eatsnow_order_transitions_total` | Counter | `from`, `to` | Global order state transitions. |
 | `eatsnow_outbox_pending` | Gauge | `service` | Unpublished outbox entries. |
 | `eatsnow_outbox_oldest_pending_seconds` | Gauge | `service` | Age of the oldest unpublished entry. |
