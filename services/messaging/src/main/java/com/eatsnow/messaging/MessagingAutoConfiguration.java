@@ -7,6 +7,7 @@ import com.eatsnow.messaging.outbox.OutboxWriter;
 import com.eatsnow.messaging.publisher.MessagePublisher;
 import com.eatsnow.messaging.relay.OutboxRelay;
 import com.eatsnow.messaging.tracing.TraceSupport;
+import com.eatsnow.messaging.tracing.WorkflowTraces;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.propagation.Propagator;
@@ -31,8 +32,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class MessagingAutoConfiguration {
 
     @Bean
-    public TraceSupport traceSupport(Tracer tracer, Propagator propagator) {
-        return new TraceSupport(tracer, propagator);
+    public WorkflowTraces workflowTraces(JdbcClient jdbc) {
+        return new WorkflowTraces(jdbc);
+    }
+
+    @Bean
+    public TraceSupport traceSupport(Tracer tracer, Propagator propagator, WorkflowTraces workflowTraces) {
+        return new TraceSupport(tracer, propagator, workflowTraces);
     }
 
     @Bean
@@ -52,8 +58,9 @@ public class MessagingAutoConfiguration {
 
     @Bean
     public EnvelopeConsumer envelopeConsumer(TransactionTemplate tx, ProcessedMessages processed,
-                                             MessagePublisher publisher, TraceSupport trace, MeterRegistry registry) {
-        return new EnvelopeConsumer(tx, processed, publisher, trace, registry);
+                                             MessagePublisher publisher, TraceSupport trace,
+                                             WorkflowTraces workflowTraces, MeterRegistry registry) {
+        return new EnvelopeConsumer(tx, processed, publisher, trace, workflowTraces, registry);
     }
 
     @Bean

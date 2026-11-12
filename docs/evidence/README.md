@@ -61,6 +61,24 @@ Durability check in the Orders database after the run, with the downstream servi
 
 After the services were started again, every order of the run reached `paymentStatus = AUTHORIZED`, all queues drained and no message reached a DLQ. The orders stay `CREATED` because the load uses Burger House, which has no restaurant user to accept them.
 
+## Feature 5 - Correlated logs, metrics and distributed traces
+
+Reproduce with one command (about 8 minutes; scenario 3 stops RabbitMQ for about three minutes and waits for the alerts):
+
+```powershell
+./scripts/feature5-evidence.ps1
+```
+
+The script runs each scenario against the running stack and writes what it found in Loki, Jaeger and Prometheus to [`docs/evidence/feature5/`](feature5/). It follows the investigation procedure of [Spec 6.6](../spec.md#66-order-investigation-procedure).
+
+| Scenario (Spec 5) | What runs | Evidence | Result |
+| --- | --- | --- | --- |
+| Trace an order across participating services | Full order: payment, restaurant acceptance and preparation, driver pickup and completion | [`1-trace-order.md`](feature5/1-trace-order.md) | Loki returns the log lines of all five participating services for the `orderId`, all with the same `correlationId`. Jaeger finds the five traces of the order by `eatsnow.correlation_id`. The creation trace holds the HTTP, `publish` and `consume` spans from Orders to the restaurant inbox. Each restaurant and driver action has a span link to the order's workflow trace. |
+| Investigate an ambiguous payment outcome | One order with a lost provider response (`tok_lost_response`), one with a declined card (`tok_declined`) | [`2-payment-ambiguous.md`](feature5/2-payment-ambiguous.md) | Payments logs `UNKNOWN`, then `AUTHORIZED` after reconciliation. The order stays `CREATED` meanwhile, so the unknown outcome is never reported as a failed charge. The declined card is a definitive `FAILED` and the order is `PAYMENT_FAILED`. |
+| Detect failed or stalled message processing | RabbitMQ stopped while an order is accepted; a poison command sent to the Restaurant Service | [`3-messaging-alerts.md`](feature5/3-messaging-alerts.md) | `POST /orders` returns 202 with the broker down. `OutboxStalled` fires for `orders`, and after the restart the outbox drains to 0 and the payment is authorized. The poison command goes straight to `restaurants.commands.dlq` and `MessagesInDLQ` fires; the DLQ log line keeps the order's `orderId` and `correlationId`. The DLQ is purged afterwards. |
+
+Sensitive data (Spec 6.5): every service's `logback-spring.xml` masks tokens, emails and delivery addresses as `[REDACTED]`, whether they appear as a field or inside a message. `LogMaskingTest` (Orders) checks this deny-list against the real logging configuration.
+
 ## Dashboards (Spec 6.4)
 
 Grafana (`http://localhost:3000`), folder **EatsNow**. The dashboards are provisioned from [`infra/grafana/dashboards/`](../../infra/grafana/dashboards/) and are read-only in the UI.

@@ -46,6 +46,11 @@
             <artifactId>micrometer-tracing</artifactId>
         </dependency>
         <dependency>
+            <!-- Span.addLink after start (Spec 6.3); Micrometer Tracing only links at span creation -->
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>${logstash-logback-encoder.version}</version>

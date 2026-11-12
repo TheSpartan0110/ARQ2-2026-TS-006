@@ -138,3 +138,6 @@ Write-Host "Whole order lifecycle (Jaeger): http://localhost:16686/search?servic
 Write-Host "Emails sent to the customer:    http://localhost:8025   (Mailpit)"
 Write-Host "Investigate in Grafana:         http://localhost:3000 -> Explore -> Loki"
 Write-Host "  {service=~`".+`"} | json | orderId=`"$orderId`""
+
+# Pipeline output for callers such as scripts/feature5-evidence.ps1
+[pscustomobject]@{ OrderId = $orderId; CorrelationId = $correlationId; TraceId = $traceId }

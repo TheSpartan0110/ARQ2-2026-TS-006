@@ -2,6 +2,15 @@
 <configuration>
     <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <!-- Deny-list (Spec 6.5): defense in depth if a token, card token, email or address reaches a log line -->
+            <jsonGeneratorDecorator class="net.logstash.logback.mask.MaskingJsonGeneratorDecorator">
+                <defaultMask>[REDACTED]</defaultMask>
+                <paths>authorization,accessToken,access_token,idToken,id_token,refreshToken,quoteToken,paymentMethodToken,paymentToken,password,clientSecret,client_secret,email,deliveryAddress,line1,instructions</paths>
+                <value>(?i)bearer\s+[A-Za-z0-9._~+/=-]+</value>
+                <value>eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*</value>
+                <value>\btok_[A-Za-z0-9_]+</value>
+                <value>[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}</value>
+            </jsonGeneratorDecorator>
             <providers>
                 <timestamp>
                     <timeZone>UTC</timeZone>
