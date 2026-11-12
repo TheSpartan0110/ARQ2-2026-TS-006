@@ -9,6 +9,7 @@ import com.eatsnow.messaging.support.MessageJson;
 import com.eatsnow.messaging.support.MessageTypes;
 import com.eatsnow.messaging.support.PoisonMessageException;
 import com.eatsnow.messaging.tracing.TraceSupport;
+import com.eatsnow.messaging.tracing.WorkflowTraces;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.tracing.Span;
@@ -37,14 +38,16 @@ public class EnvelopeConsumer {
     private final ProcessedMessages processedMessages;
     private final MessagePublisher publisher;
     private final TraceSupport trace;
+    private final WorkflowTraces workflowTraces;
     private final MeterRegistry registry;
 
     public EnvelopeConsumer(TransactionTemplate tx, ProcessedMessages processedMessages, MessagePublisher publisher,
-                            TraceSupport trace, MeterRegistry registry) {
+                            TraceSupport trace, WorkflowTraces workflowTraces, MeterRegistry registry) {
         this.tx = tx;
         this.processedMessages = processedMessages;
         this.publisher = publisher;
         this.trace = trace;
+        this.workflowTraces = workflowTraces;
         this.registry = registry;
     }
 
@@ -66,6 +69,7 @@ public class EnvelopeConsumer {
                     if (!processedMessages.markProcessed(consumerName, env.messageId())) {
                         return false;                       // duplicate: no business effect (Spec 4.3 item 2)
                     }
+                    workflowTraces.record(env.orderId(), env.traceparent());   // link target of later actions
                     handler.handle(env);
                     return true;
                 });

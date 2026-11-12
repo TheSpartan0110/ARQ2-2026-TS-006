@@ -3,6 +3,9 @@ package com.eatsnow.messaging.tracing;
 import io.micrometer.tracing.Span;
 import io.micrometer.tracing.Tracer;
 import io.micrometer.tracing.propagation.Propagator;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.TraceFlags;
+import io.opentelemetry.api.trace.TraceState;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -20,10 +23,12 @@ public class TraceSupport {
 
     private final Tracer tracer;
     private final Propagator propagator;
+    private final WorkflowTraces workflowTraces;
 
-    public TraceSupport(Tracer tracer, Propagator propagator) {
+    public TraceSupport(Tracer tracer, Propagator propagator, WorkflowTraces workflowTraces) {
         this.tracer = tracer;
         this.propagator = propagator;
+        this.workflowTraces = workflowTraces;
     }
 
     /** traceparent of the active span, or null when there is none. */
@@ -68,9 +73,29 @@ public class TraceSupport {
         }
     }
 
-    /** Tags the active span (for example the HTTP server span of a request that acts on an order). */
+    /**
+     * Tags the active span (for example the HTTP server span of a request that acts on an order) and links it to the
+     * stored workflow trace, so the restaurant or driver action leads back to the order's trace (Spec 6.3).
+     */
     public void tagCurrentWorkflow(UUID orderId, UUID correlationId) {
         tagWorkflow(tracer.currentSpan(), orderId, correlationId);
+        if (orderId != null) {
+            workflowTraces.find(orderId).ifPresent(TraceSupport::linkCurrent);
+        }
+    }
+
+    /** Adds a span link from the active span to the given traceparent; a malformed value is ignored. */
+    static void linkCurrent(String traceparent) {
+        String[] parts = traceparent.split("-");
+        if (parts.length != 4) {
+            return;
+        }
+        SpanContext linked = SpanContext.createFromRemoteParent(parts[1], parts[2],
+                TraceFlags.fromHex(parts[3], 0), TraceState.getDefault());
+        io.opentelemetry.api.trace.Span current = io.opentelemetry.api.trace.Span.current();
+        if (linked.isValid() && !linked.getTraceId().equals(current.getSpanContext().getTraceId())) {
+            current.addLink(linked);
+        }
     }
 
     /** Makes the span current (also fills traceId/spanId in the logs) until the returned scope is closed. */

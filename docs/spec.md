@@ -709,7 +709,7 @@ Example:
 - Every outbox entry stores the `traceparent` of the transaction that created it. The relay creates a `publish <messageType>` producer span as a child of that context and writes it to the envelope.
 - Each consumer extracts `traceparent` and creates a `consume <messageType>` consumer span as its child, so one order workflow appears as a single trace across services.
 - Every `publish` and `consume` span carries the envelope's `eatsnow.order_id` and `eatsnow.correlation_id` attributes, as does the HTTP span of `POST /orders`.
-- Later restaurant and driver HTTP actions start their own traces. Their spans carry `eatsnow.order_id` and `eatsnow.correlation_id` attributes and a span link to the stored workflow trace context.
+- Later restaurant and driver HTTP actions start their own traces. Their spans carry `eatsnow.order_id` and `eatsnow.correlation_id` attributes and a span link to the stored workflow trace context: the `traceparent` of the first message the service consumed for that order (table `workflow_traces` in the service schema).
 - Payment provider and email provider calls are client spans with `eatsnow.order_id` and the outcome, but no tokens or addresses.
 - Sampling is parent-based, always on (100%) in the Wave 2 environment so every order can be traced. Any lower production ratio must be recorded in an ADR.
 
