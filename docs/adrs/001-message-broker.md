@@ -1,7 +1,7 @@
 # ADR 001 — Message Broker
 
-- **Status:** Proposed
-- **Category:** Microservices Integration
+- **Status:** Accepted (implemented in Wave 2)
+- - **Category:** Microservices Integration
 
 ## Context and Problem
 
