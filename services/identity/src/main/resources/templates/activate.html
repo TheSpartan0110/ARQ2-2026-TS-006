@@ -8,32 +8,39 @@
     <link rel="stylesheet" th:href="@{/css/identity.css}">
 </head>
 <body>
-<main>
-    <p class="brand">EatsNow</p>
-    <h1>Activate your account</h1>
+<div class="shell">
+    <aside th:replace="~{fragments/brand :: hero}"></aside>
 
-    <th:block th:if="${usable}">
-        <p class="message error" th:if="${error}" th:text="${error}"></p>
-        <form method="post" th:action="@{/activate}">
-            <input type="hidden" name="token" th:value="${token}">
-            <label>New password
-                <input type="password" name="password" minlength="8" maxlength="72" autocomplete="new-password"
-                       required autofocus>
-            </label>
-            <p class="hint">8 to 72 characters.</p>
-            <label>Confirm password
-                <input type="password" name="confirmPassword" minlength="8" maxlength="72"
-                       autocomplete="new-password" required>
-            </label>
-            <button type="submit">Set password</button>
-        </form>
-    </th:block>
+    <main class="panel">
+        <div class="panel-inner">
+            <div class="panel-logo" th:insert="~{fragments/brand :: logo}"></div>
+            <h1>Activate your account</h1>
+            <p class="lead">Choose the password you will use to sign in.</p>
 
-    <p class="message error" th:unless="${usable}">
-        This activation link is invalid, expired or already used. Ask an administrator for a new account link.
-    </p>
+            <th:block th:if="${usable}">
+                <p class="message error" th:if="${error}" th:text="${error}"></p>
+                <form method="post" th:action="@{/activate}">
+                    <input type="hidden" name="token" th:value="${token}">
+                    <label>New password
+                        <input type="password" name="password" minlength="8" maxlength="72"
+                               autocomplete="new-password" required autofocus>
+                    </label>
+                    <label>Confirm password
+                        <input type="password" name="confirmPassword" minlength="8" maxlength="72"
+                               autocomplete="new-password" required>
+                    </label>
+                    <p class="hint">8 to 72 characters.</p>
+                    <button type="submit">Set password</button>
+                </form>
+            </th:block>
 
-    <p class="alt"><a th:href="@{/login}">Back to sign in</a></p>
-</main>
+            <p class="message error" th:unless="${usable}">
+                This activation link is invalid, expired or already used. Ask an administrator for a new account link.
+            </p>
+
+            <p class="alt"><a th:href="@{/login}">Back to sign in</a></p>
+        </div>
+    </main>
+</div>
 </body>
 </html>
