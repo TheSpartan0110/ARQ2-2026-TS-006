@@ -1,6 +1,6 @@
 # ADR 004 — PostgreSQL with One Schema per Service
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented in Wave 2)
 - **Category:** Data Management
 
 ## Context and Problem
