@@ -157,7 +157,7 @@ This enables complete order journey reconstruction and faster incident diagnosis
 
 ## 14) Development Roadmap
 
-### Wave 1 — Planning and Design (current focus)
+### Wave 1 — Planning and Design (completed)
 
 - [x] Case assignment and scope definition
 - [x] Event-driven architectural direction documented
@@ -166,7 +166,7 @@ This enables complete order journey reconstruction and faster incident diagnosis
 - [x] Contract specification completed (pending team review)
 - [ ] Final C4 container-level documentation consolidated
 
-### Wave 2 — Implementation (planned)
+### Wave 2 — Implementation (current focus)
 
 - [x] Implement gateway and core services
 - [x] Configure PostgreSQL, Redis, RabbitMQ
