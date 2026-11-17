@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Logo shared with the web app header: utensils on the EatsNow green tile. -->
+<a th:fragment="logo" class="logo" th:href="@{/login}">
+    <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="m16 2-2.3 2.3a3 3 0 0 0 0 4.2l1.8 1.8a3 3 0 0 0 4.2 0L22 8"/>
+            <path d="M15 15 3.3 3.3a4.2 4.2 0 0 0 0 6l7.3 7.3c.7.7 2 .7 2.8 0L15 15Zm0 0 7 7"/>
+            <path d="m2.1 21.8 6.4-6.3"/>
+            <path d="m19 5-7 7"/>
+        </svg>
+    </span>
+    <span class="logo-text">
+        <span class="logo-name">Eats<span>Now</span></span>
+        <span class="logo-tagline">Food, delivered fast</span>
+    </span>
+</a>
+
+<!-- Brand panel beside the forms; hidden on narrow screens. -->
+<aside th:fragment="hero" class="hero" aria-hidden="true">
+    <div th:replace="~{fragments/brand :: logo}"></div>
+
+    <div class="hero-copy">
+        <h2>Your favorite food, <em>on its way</em> in minutes.</h2>
+        <p>Order from local restaurants, pay safely and follow every step until it reaches your door.</p>
+    </div>
+
+    <div class="hero-order">
+        <div class="hero-order-head">
+            <span class="dish">🍝</span>
+            <span>
+                <strong>Pasta Carbonara × 2</strong>
+                <small>Elena Bistro</small>
+            </span>
+            <span class="live">Live</span>
+        </div>
+        <ol class="steps">
+            <li class="done">Order placed</li>
+            <li class="done">Payment confirmed</li>
+            <li class="done">Restaurant accepted</li>
+            <li class="now">On the way</li>
+            <li>Delivered</li>
+        </ol>
+    </div>
+
+    <ul class="hero-dishes">
+        <li>🍔</li><li>🍕</li><li>🌮</li><li>🥗</li><li>🍣</li>
+    </ul>
+</aside>
+
+</body>
+</html>
