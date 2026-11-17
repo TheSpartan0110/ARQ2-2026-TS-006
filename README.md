@@ -1,6 +1,6 @@
 # EatsNow — Delivery and Order Orchestration Platform
 
-![Status](https://img.shields.io/badge/status-Wave%201%20Design-blue)
+![Status](https://img.shields.io/badge/status-Wave%202%20Implementation-green)
 ![Architecture](https://img.shields.io/badge/architecture-event--driven-purple)
 ![Language](https://img.shields.io/badge/repository-English%20only-green)
 
@@ -168,10 +168,10 @@ This enables complete order journey reconstruction and faster incident diagnosis
 
 ### Wave 2 — Implementation (planned)
 
-- [ ] Implement gateway and core services
-- [ ] Configure PostgreSQL, Redis, RabbitMQ
-- [ ] Add asynchronous workflows and idempotent consumers
-- [ ] Integrate observability stack end-to-end
+- [x] Implement gateway and core services
+- [x] Configure PostgreSQL, Redis, RabbitMQ
+- [x] Add asynchronous workflows and idempotent consumers
+- [x] Integrate observability stack end-to-end
 - [ ] Validate implementation against specification
 
 ## 15) Getting Started
