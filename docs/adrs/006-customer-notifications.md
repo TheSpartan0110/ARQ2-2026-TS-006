@@ -1,6 +1,6 @@
 # ADR 006 — Asynchronous Customer Notifications
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented in Wave 2)
 - **Category:** Microservices Integration
 
 ## Context and Problem

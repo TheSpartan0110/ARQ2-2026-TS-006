@@ -1,6 +1,6 @@
 # ADR 002 — Catalog Cache
 
-- **Status:** Proposed
+- **Status:** Accepted (implemented in Wave 2)
 - **Category:** Performance and Availability
 
 ## Context and Problem
